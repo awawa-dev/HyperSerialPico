@@ -1,0 +1,85 @@
+name: HyperSerialPico CI Build
+
+on: [push]
+
+jobs:
+
+###########################
+#### HyperSerialPico ######
+###########################
+
+  HyperSerialPico:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Install GNU Arm Embedded Toolchain
+      uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '12.2.Rel1'
+
+    - name: Build packages        
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config Release
+
+    - uses: actions/upload-artifact@v3
+      name: Upload artifacts (commit)
+      if: (startsWith(github.event.ref, 'refs/tags') != true)
+      with:
+        path: |
+          firmwares/*.uf2
+
+    - uses: actions/upload-artifact@v3
+      name: Upload artifacts (release)
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        name: firmware-release
+        path: |
+          firmwares/*.uf2
+
+################################
+###### Publish Releases ########
+################################
+
+  publish:
+    name: Publish Releases
+    if: startsWith(github.event.ref, 'refs/tags')
+    needs: [HyperSerialPico]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write    
+    steps:
+      # generate environment variables
+      - name: Generate environment variables from version and tag
+        run: |
+          echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          echo "preRelease=false" >> $GITHUB_ENV
+
+      # If version contains alpha or beta, mark draft release as pre-release
+      - name: Mark release as pre-release
+        if: contains(env.VERSION, 'alpha') || contains(env.VERSION, 'beta')
+        run: echo "preRelease=true" >> $GITHUB_ENV
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: firmware-release
+
+      # create draft release and upload artifacts
+      - name: Create draft release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: HyperSerialPico ${{ env.VERSION }}
+          tag_name: ${{ env.TAG }}
+          files: |
+            *.uf2
+          draft: true
+          prerelease: ${{ env.preRelease }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
