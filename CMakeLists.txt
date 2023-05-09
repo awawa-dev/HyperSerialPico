@@ -3,7 +3,7 @@
 # Default output data pin for the LED strip
 set(OUTPUT_DATA_PIN 2)
 
-# Default output data pin for the LED strip (SPI leds only, not for sk6812/ws2812b)
+# Default output clock pin for the LED strip (SPI leds only, not for sk6812/ws2812b)
 set(OUTPUT_CLOCK_PIN 3)
 
 # Use multi-segment, starting index of second led strip or OFF to disable
@@ -16,6 +16,9 @@ set(SECOND_SEGMENT_REVERSED OFF)
 # Usually you don't need to change anything belowe this section
 
 cmake_minimum_required(VERSION 3.13)
+
+# Disable Pico 'Reset device'
+add_definitions ( -DPICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE=0 )
 
 # initialize the SDK based on PICO_SDK_PATH
 # note: this must happen before project()

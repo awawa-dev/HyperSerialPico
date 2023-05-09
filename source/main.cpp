@@ -117,9 +117,7 @@ static void core1()
     {
         if (sem_acquire_timeout_us(&base.serialSemaphore, portMAX_DELAY))
         {
-            //printf("Core %d: Start index: %i, End index: %i, (%u)\n", get_core_num(), base.queueCurrent, base.queueEnd, millis()); 
             processData();        
-            //printf("Core %d: Start index: %i, End index: %i, (%u)\n", get_core_num(), base.queueCurrent, base.queueEnd, millis()); 
         }
     }
 }
@@ -130,14 +128,16 @@ static void core0( void *pvParameters )
     {
         if (sem_acquire_timeout_us(&base.receiverSemaphore, portMAX_DELAY))
         {
-            int total, toRead;            
+            int wanted, received;
             do
             {
-                toRead = MAX_BUFFER - base.queueEnd;
-                total = stdio_usb.in_chars((char*)(&(base.buffer[base.queueEnd])), MAX_BUFFER - base.queueEnd);
-                if (total > 0)
-                    base.queueEnd = (base.queueEnd + total) % (MAX_BUFFER);
-            }while(toRead==total);
+                wanted = std::min(MAX_BUFFER - base.queueEnd, MAX_BUFFER - 1);
+                received = stdio_usb.in_chars((char*)(&(base.buffer[base.queueEnd])), wanted);
+                if (received > 0)
+                {
+                    base.queueEnd = (base.queueEnd + received) % (MAX_BUFFER);
+                }
+            }while(wanted == received);
 
             sem_release(&base.serialSemaphore);
         }

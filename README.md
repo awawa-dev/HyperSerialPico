@@ -17,8 +17,8 @@ HyperHDR's highspeed adalight serial port LED driver implementation for Raspberr
 # How to flash it?
 It's very easy and you don't need any special flasher.  
 Download the firmware from the [Release folder](https://github.com/awawa-dev/HyperSerialPico/releases).
-* If you Pico board has only one button (`boot`) then press & hold it and connect the board to the USB port. Then you can release the button.
-* If you Pico board has two buttons, connect it to the USB port. Then press & hold `boot` and `reset` buttons, then release `reset` and next release `boot` button.  
+* If your Pico board has only one button (`boot`) then press & hold it and connect the board to the USB port. Then you can release the button.
+* If your Pico board has two buttons, connect it to the USB port. Then press & hold `boot` and `reset` buttons, then release `reset` and next release `boot` button.  
 
 In the system file explorer you should find new drive (e.g. called `RPI-RP2` drive) exposed by the Pico board. Drap & drop the selected fimrware. 
 The Pico will reset automaticly after the upload and after few seconds it will be ready to use by HyperHDR as a serial port device using Adalight driver.

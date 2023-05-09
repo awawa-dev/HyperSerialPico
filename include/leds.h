@@ -48,15 +48,15 @@
     ledStrip1->renderSingleLane();
 
     Usage for sk6812 rgbw multi lanes:
-    ledStrip1 = new sk6812(ledsNumber, DATA_PIN); // using DATA_PIN output
-    ledStrip2 = new sk6812(ledsNumber, DATA_PIN); // using DATA_PIN + 1 output
+    ledStrip1 = new sk6812p(ledsNumber, DATA_PIN); // using DATA_PIN output
+    ledStrip2 = new sk6812p(ledsNumber, DATA_PIN); // using DATA_PIN + 1 output
     ledStrip1->SetPixel(index, ColorGrbw(255));
     ledStrip2->SetPixel(index, ColorGrbw(255));
     ledStrip1->renderAllLanes(); // renders ledStrip1 and ledStrip2 simoultaneusly
 
     Usage for ws2812 rgb multi lanes:
-    ledStrip1 = new ws2812(ledsNumber, DATA_PIN); // using DATA_PIN output
-    ledStrip2 = new ws2812(ledsNumber, DATA_PIN); // using DATA_PIN + 1 output
+    ledStrip1 = new ws2812p(ledsNumber, DATA_PIN); // using DATA_PIN output
+    ledStrip2 = new ws2812p(ledsNumber, DATA_PIN); // using DATA_PIN + 1 output
     ledStrip1->SetPixel(index, ColorGrb(255));
     ledStrip2->SetPixel(index, ColorGrb(255));
     ledStrip1->renderAllLanes(); // renders ledStrip1 and ledStrip2 simoultaneusly
