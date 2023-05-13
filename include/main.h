@@ -56,11 +56,6 @@ void processData()
 
 	updateMainStatistics(currentTime, deltaTime, base.queueCurrent != base.queueEnd);
 
-	if (statistics.getStartTime() + 5000 < millis())
-	{
-		frameState.setState(AwaProtocol::HEADER_A);
-	}
-
 	// render waiting frame if available
 	if (base.hasLateFrameToRender())
 		base.renderLeds(false);
@@ -79,34 +74,25 @@ void processData()
 		switch (frameState.getState())
 		{
 		case AwaProtocol::HEADER_A:
-			// assume it's protocol version 1, verify it later
-			frameState.setProtocolVersion2(false);
 			if (input == 'A')
-				frameState.setState(AwaProtocol::HEADER_w);
+				frameState.setState(AwaProtocol::HEADER_d);
 			break;
 
-		case AwaProtocol::HEADER_w:
-			if (input == 'w')
+		case AwaProtocol::HEADER_d:
+			if (input == 'd')
 				frameState.setState(AwaProtocol::HEADER_a);
 			else
 				frameState.setState(AwaProtocol::HEADER_A);
 			break;
 
 		case AwaProtocol::HEADER_a:
-			// detect protocol version
 			if (input == 'a')
 				frameState.setState(AwaProtocol::HEADER_HI);
-			else if (input == 'A')
-			{
-				frameState.setState(AwaProtocol::HEADER_HI);
-				frameState.setProtocolVersion2(true);
-			}
 			else
 				frameState.setState(AwaProtocol::HEADER_A);
 			break;
 
 		case AwaProtocol::HEADER_HI:
-			// initialize new frame properties
 			statistics.increaseTotal();
 			frameState.init(input);
 			frameState.setState(AwaProtocol::HEADER_LO);
@@ -133,18 +119,6 @@ void processData()
 
 					frameState.setState(AwaProtocol::RED);
 				}
-			}
-			else if (frameState.getCount() ==  0x2aa2 && (input == 0x15 || input == 0x35))
-			{
-				statistics.print(currentTime, base.processDataHandle, base.processSerialHandle);
-
-				if (input == 0x15)
-					printf(HELLO_MESSAGE);
-				delay(10);
-
-				currentTime = millis();
-				statistics.reset(currentTime);
-				frameState.setState(AwaProtocol::HEADER_A);
 			}
 			else
 				frameState.setState(AwaProtocol::HEADER_A);
@@ -180,80 +154,22 @@ void processData()
 			}
 			else
 			{
-				if (frameState.isProtocolVersion2())
-					frameState.setState(AwaProtocol::VERSION2_GAIN);
-				else
-					frameState.setState(AwaProtocol::FLETCHER1);
+				frameState.setState(AwaProtocol::FINAL);
 			}
 
 			break;
 
-		case AwaProtocol::VERSION2_GAIN:
-			frameState.calibration.gain = input;
-			frameState.addFletcher(input);
+		case AwaProtocol::FINAL:
+			statistics.increaseGood();
 
-			frameState.setState(AwaProtocol::VERSION2_RED);
-			break;
+			base.renderLeds(true);
 
-		case AwaProtocol::VERSION2_RED:
-			frameState.calibration.red = input;
-			frameState.addFletcher(input);
 
-			frameState.setState(AwaProtocol::VERSION2_GREEN);
-			break;
+			currentTime = millis();
+			deltaTime = currentTime - statistics.getStartTime();
+			updateMainStatistics(currentTime, deltaTime, true);
 
-		case AwaProtocol::VERSION2_GREEN:
-			frameState.calibration.green = input;
-			frameState.addFletcher(input);
-
-			frameState.setState(AwaProtocol::VERSION2_BLUE);
-			break;
-
-		case AwaProtocol::VERSION2_BLUE:
-			frameState.calibration.blue = input;
-			frameState.addFletcher(input);
-
-			frameState.setState(AwaProtocol::FLETCHER1);
-			break;
-
-		case AwaProtocol::FLETCHER1:
-			// initial frame data integrity check
-			if (input != frameState.getFletcher1())
-				frameState.setState(AwaProtocol::HEADER_A);
-			else
-				frameState.setState(AwaProtocol::FLETCHER2);
-			break;
-
-		case AwaProtocol::FLETCHER2:
-			// initial frame data integrity check
-			if (input != frameState.getFletcher2())
-				frameState.setState(AwaProtocol::HEADER_A);
-			else
-				frameState.setState(AwaProtocol::FLETCHER_EXT);
-			break;
-
-		case AwaProtocol::FLETCHER_EXT:
-			// final frame data integrity check
-			if (input == frameState.getFletcherExt())
-			{
-				statistics.increaseGood();
-
-				base.renderLeds(true);
-
-				#ifdef NEOPIXEL_RGBW
-					// if received the calibration data, update it now
-					if (frameState.isProtocolVersion2())
-					{
-						frameState.updateIncomingCalibration();
-					}
-				#endif
-
-				currentTime = millis();
-				deltaTime = currentTime - statistics.getStartTime();
-				updateMainStatistics(currentTime, deltaTime, true);
-
-				yield();
-			}
+			yield();
 
 			frameState.setState(AwaProtocol::HEADER_A);
 			break;

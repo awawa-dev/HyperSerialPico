@@ -18,7 +18,7 @@ set(SECOND_SEGMENT_REVERSED OFF)
 cmake_minimum_required(VERSION 3.13)
 
 # Disable Pico 'Reset device'
-add_definitions ( -DPICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE=0 )
+add_definitions ( -DPICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE=0 -DPICO_STDIO_USB_CONNECTION_WITHOUT_DTR=1 )
 
 # initialize the SDK based on PICO_SDK_PATH
 # note: this must happen before project()

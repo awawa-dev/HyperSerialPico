@@ -28,13 +28,16 @@ jobs:
         cd build
         cmake ..
         cmake --build . --config Release
+        cd ../firmwares
+        for f in *.uf2 ; do mv -- "$f" "classic_adalight_$f" ; done
+        touch not_for_HyperHDR_firmwares.txt
 
     - uses: actions/upload-artifact@v3
       name: Upload artifacts (commit)
       if: (startsWith(github.event.ref, 'refs/tags') != true)
       with:
         path: |
-          firmwares/*.uf2
+          firmwares/*.*
 
     - uses: actions/upload-artifact@v3
       name: Upload artifacts (release)
@@ -42,7 +45,7 @@ jobs:
       with:
         name: firmware-release
         path: |
-          firmwares/*.uf2
+          firmwares/*.*
 
 ################################
 ###### Publish Releases ########
