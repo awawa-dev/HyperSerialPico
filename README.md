@@ -1,5 +1,5 @@
 # HyperSerialPico
-HyperHDR's highspeed adalight serial port LED driver implementation for Raspberry Pi Pico RP2040.  
+Adalight serial port LED driver implementation for Raspberry Pi Pico RP2040.  
 
 # Example of supported boards using Rp2040
 <p align="center"><img src="https://user-images.githubusercontent.com/69086569/236885968-baab51ba-a54b-4072-9a2a-cf867f2edb4b.png"/><img src="https://user-images.githubusercontent.com/69086569/236885360-dce9cfd7-92a8-43c6-911f-649325ee8a96.png"/></p>
@@ -16,11 +16,16 @@ HyperHDR's highspeed adalight serial port LED driver implementation for Raspberr
 
 # How to flash it?
 It's very easy and you don't need any special flasher.  
-Download the firmware from the [Release folder](https://github.com/awawa-dev/HyperSerialPico/releases).
+
+First download the firmware directly from the [Release folder](https://github.com/awawa-dev/HyperSerialPico/releases).  
+
+For HyperHDR choose `HyperSerialPico_<type>.uf2` firmware where *type* is one of supported LEDs: sk6812 cold/neutral white, variants of ws2812 and apa102. If you are using an application other than HyperHDR, select the `classic_adalight.zip` archive, unzip it and select *classic_adalight_HyperSerialPico_<type>.uf2* firmware (note: do not use firmwares from this archive for HyperHDR, they do not support my AWA protocol extension, missing many options and are simply only backwards compatible with other applications).  
+  
+Next put your Pico board into DFU mode:  
 * If your Pico board has only one button (`boot`) then press & hold it and connect the board to the USB port. Then you can release the button.
 * If your Pico board has two buttons, connect it to the USB port. Then press & hold `boot` and `reset` buttons, then release `reset` and next release `boot` button.  
 
-In the system file explorer you should find new drive (e.g. called `RPI-RP2` drive) exposed by the Pico board. Drap & drop the selected fimrware. 
+In the system file explorer you should find new drive (e.g. called `RPI-RP2` drive) exposed by the Pico board. Drag & drop (or copy) the selected firmware to this drive. 
 The Pico will reset automaticly after the upload and after few seconds it will be ready to use by HyperHDR as a serial port device using Adalight driver.
 
 # HyperHDR configuration
