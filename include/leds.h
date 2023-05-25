@@ -392,9 +392,9 @@ class NeopixelParallel
 {
     static Neopixel *muxer;
     static int instances;
-    static int maxLeds;
 
     protected:
+    static int maxLeds;
     const uint8_t myLaneMask;    
     static uint8_t* buffer;
 

@@ -19,7 +19,7 @@ It's very easy and you don't need any special flasher.
 
 First download the firmware directly from the [Release folder](https://github.com/awawa-dev/HyperSerialPico/releases).  
 
-For HyperHDR choose `HyperSerialPico_<type>.uf2` firmware where *type* is one of supported LEDs: sk6812 cold/neutral white, variants of ws2812 and apa102. If you are using an application other than HyperHDR, select the `classic_adalight.zip` archive, unzip it and select *classic_adalight_HyperSerialPico_<type>.uf2* firmware (note: do not use firmwares from this archive for HyperHDR, they do not support my AWA protocol extension, missing many options and are simply only backwards compatible with other applications).  
+For HyperHDR choose `HyperSerialPico_<type>.uf2` firmware where *type* is one of supported LEDs: sk6812 cold/neutral white, variants of ws2812 and apa102. If you are using an application other than HyperHDR, select the `classic_adalight.zip` archive, unzip it and select `classic_adalight_HyperSerialPico_<type>.uf2` firmware (note: do not use firmwares from this archive for HyperHDR, they do not support my AWA protocol extension, missing many options and are simply only backwards compatible with other applications).  
   
 Next put your Pico board into DFU mode:  
 * If your Pico board has only one button (`boot`) then press & hold it and connect the board to the USB port. Then you can release the button.
