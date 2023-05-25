@@ -74,7 +74,7 @@
 	#define LED_DRIVER apa102
 #endif
 
-#pragma message(VAR_NAME_VALUE(DATA_PIN))
+	#pragma message(VAR_NAME_VALUE(DATA_PIN))
 #ifdef CLOCK_PIN
 	#pragma message(VAR_NAME_VALUE(CLOCK_PIN))
 #endif
