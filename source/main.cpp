@@ -79,7 +79,7 @@
 	#pragma message(VAR_NAME_VALUE(CLOCK_PIN))
 #endif
 
-#if defined(SECOND_SEGMENT_START_INDEX)	
+#if defined(SECOND_SEGMENT_START_INDEX)
 	#pragma message("Using parallel mode for segments")
 
 	#ifdef NEOPIXEL_RGBW
@@ -93,7 +93,7 @@
 	#else
 		#error "Parallel mode is unsupportd for selected LEDs configuration"
 	#endif
-	
+
 	#pragma message(VAR_NAME_VALUE(LED_DRIVER))
 	#pragma message(VAR_NAME_VALUE(SECOND_SEGMENT_START_INDEX))
 	#pragma message(VAR_NAME_VALUE(LED_DRIVER2))
@@ -117,7 +117,7 @@ static void core1()
     {
         if (sem_acquire_timeout_us(&base.serialSemaphore, portMAX_DELAY))
         {
-            processData();        
+            processData();
         }
     }
 }
@@ -145,14 +145,14 @@ static void core0( void *pvParameters )
 }
 
 static void serialEvent(void *)
-{   
-    sem_release(&base.receiverSemaphore);    
+{
+    sem_release(&base.receiverSemaphore);
 }
 
 int main(void)
 {
     stdio_init_all();
-    
+
     sem_init(&base.serialSemaphore, 0, 1);
 
     sem_init(&base.receiverSemaphore, 0, 1);
@@ -167,11 +167,7 @@ int main(void)
             NULL,
             (configMAX_PRIORITIES - 1),
             &base.processSerialHandle);
-    
-    vTaskStartScheduler();    
+
+    vTaskStartScheduler();
     panic_unsupported();
 }
-
-
-
-
