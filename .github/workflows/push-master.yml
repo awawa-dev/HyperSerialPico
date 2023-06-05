@@ -21,7 +21,7 @@ jobs:
       with:
         release: '12.2.Rel1'
 
-    - name: Build packages        
+    - name: Build packages
       shell: bash
       run: |
         mkdir build
@@ -54,7 +54,7 @@ jobs:
     needs: [HyperSerialPico]
     runs-on: ubuntu-latest
     permissions:
-      contents: write    
+      contents: write
     steps:
       # generate environment variables
       - name: Generate environment variables from version and tag

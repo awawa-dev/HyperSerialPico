@@ -103,7 +103,7 @@ struct ColorGrb
     uint8_t B;
     uint8_t R;
     uint8_t G;
-    
+
 
     ColorGrb(uint8_t gray) :
         R(gray), G(gray), B(gray)
@@ -116,7 +116,7 @@ struct ColorGrb
 };
 
 struct ColorGrbw
-{    
+{
     uint8_t W;
     uint8_t B;
     uint8_t R;
@@ -134,13 +134,13 @@ struct ColorGrbw
     static bool isAlignedTo24()
     {
         return false;
-    };    
+    };
 };
 
 struct ColorDotstartBgr
-{    
+{
     uint8_t brightness;
-    uint8_t B;    
+    uint8_t B;
     uint8_t G;
     uint8_t R;
 
@@ -155,7 +155,7 @@ struct ColorDotstartBgr
 };
 
 class LedDriver
-{	    
+{
     protected:
 
     int ledsNumber;
@@ -163,8 +163,8 @@ class LedDriver
     int clockPin;
     int dmaSize;
     uint8_t* buffer;
-    uint8_t* dma;    
-        
+    uint8_t* dma;
+
     public:
 
     LedDriver(int _ledsNumber, int _pin, int _dmaSize): LedDriver(_ledsNumber, _pin, 0, _dmaSize)
@@ -191,7 +191,7 @@ class LedDriver
         free(dma);
         if (LedDriverDmaReceiver == this)
             LedDriverDmaReceiver = nullptr;
-    }   
+    }
 
     static LedDriver* LedDriverDmaReceiver;
 };
@@ -213,21 +213,21 @@ class DmaClient
     DmaClient()
     {
         PICO_DMA_CHANNEL = dma_claim_unused_channel(true);
-        isDmaBusy = false;        
+        isDmaBusy = false;
         lastRenderTime = 0;
     };
 
     ~DmaClient()
     {
         for(int i = 0; i < 10 && isDmaBusy; i++)
-            busy_wait_us(500);        
+            busy_wait_us(500);
 
         dma_channel_abort(PICO_DMA_CHANNEL);
         dma_channel_set_irq0_enabled(PICO_DMA_CHANNEL, false);
         irq_set_enabled(DMA_IRQ_0, false);
 
         dma_channel_unclaim(PICO_DMA_CHANNEL);
-    };    
+    };
 
     void dmaConfigure(PIO _selectedPIO, uint _sm)
     {
@@ -270,9 +270,9 @@ class DmaClient
         int wait = 200;
         while(isDmaBusy && wait-- > 0)
             busy_wait_us(50);
-            
+
         return !isDmaBusy;
-    }    
+    }
 
     bool isReady()
     {
@@ -284,7 +284,7 @@ class DmaClient
         if (dma_hw->ints0 & (1u<<DmaClient::PICO_DMA_CHANNEL))
         {
             dma_hw->ints0 = (1u<<DmaClient::PICO_DMA_CHANNEL);
-        
+
             lastRenderTime = time_us_64();
             isDmaBusy = false;
         }
@@ -292,7 +292,7 @@ class DmaClient
 };
 
 class Neopixel : public LedDriver, public DmaClient
-{	
+{
 
     uint64_t resetTime;
 
@@ -329,12 +329,12 @@ class Neopixel : public LedDriver, public DmaClient
         pio_sm_set_consecutive_pindirs(selectedPIO, stateIndex, _pin, std::max(lanes, 1), true);
         sm_config_set_out_shift(&smConfig, false, true, (alignTo24) ? 24: 32);
         sm_config_set_fifo_join(&smConfig, PIO_FIFO_JOIN_TX);
-        float div = clock_get_hz(clk_sys) / (800000 * 12);            
+        float div = clock_get_hz(clk_sys) / (800000 * 12);
         sm_config_set_clkdiv(&smConfig, div);
         pio_sm_init(selectedPIO, stateIndex, programAddress, &smConfig);
         pio_sm_set_enabled(selectedPIO, stateIndex, true);
 
-        initDmaPio(dmaSize / 4);        
+        initDmaPio(dmaSize / 4);
     }
 
     uint8_t* getBufferMemory()
@@ -355,29 +355,29 @@ class Neopixel : public LedDriver, public DmaClient
         if (currentTime < resetTime + lastRenderTime)
             busy_wait_us(std::min(resetTime + lastRenderTime - currentTime, resetTime));
 
-        memcpy(dma, buffer, dmaSize);            
+        memcpy(dma, buffer, dmaSize);
 
         dma_channel_set_read_addr(PICO_DMA_CHANNEL, dma, true);
 
         if (resetBuffer)
             memset(buffer, 0, dmaSize);
-    }        
+    }
 };
 
 template<int RESET_TIME, typename colorData>
 class NeopixelType : public Neopixel
-{       
+{
     public:
 
     NeopixelType(int _ledsNumber, int _pin) : Neopixel(0, RESET_TIME, _ledsNumber, _pin, _ledsNumber * sizeof(colorData), colorData::isAlignedTo24())
     {
     }
-    
+
     void SetPixel(int index, colorData color)
     {
         if (index >= ledsNumber)
             return;
-        
+
         *(reinterpret_cast<colorData*>(buffer)+index) = color;
     }
 
@@ -395,7 +395,7 @@ class NeopixelParallel
 
     protected:
     static int maxLeds;
-    const uint8_t myLaneMask;    
+    const uint8_t myLaneMask;
     static uint8_t* buffer;
 
     public:
@@ -432,12 +432,12 @@ class NeopixelParallel
     bool isReady()
     {
         return muxer->isReady();
-    } 
+    }
 
     void renderAllLanes()
     {
         muxer->renderDma(true);
-    }   
+    }
 };
 
 template<int RESET_TIME, typename colorData>
@@ -445,13 +445,13 @@ class NeopixelParallelType : public NeopixelParallel
 {
     uint32_t lut[16];
 
-    public:        
+    public:
 
     NeopixelParallelType(int _ledsNumber, int _basePinForLanes) : NeopixelParallel(sizeof(colorData), RESET_TIME,
                                                         _ledsNumber, _basePinForLanes)
     {
         for (uint8_t a = 0; a < 16; a++)
-        {                
+        {
             uint8_t* target = reinterpret_cast<uint8_t*>(&(lut[a]));
             for (uint8_t b = 0; b < 4; b++)
                 *(target++) = (uint8_t) ((a & (0b00000001 << b)) ? myLaneMask : 0);
@@ -462,16 +462,16 @@ class NeopixelParallelType : public NeopixelParallel
     {
         if (index >= maxLeds)
             return;
-        
+
         uint8_t* source = reinterpret_cast<uint8_t*>(&color);
         uint32_t* target = reinterpret_cast<uint32_t*>(&(buffer[(index + 1) * 8 * sizeof(colorData)]));
 
         for(int i = 0; i < sizeof(colorData); i++)
-        {   
-            *(--target) |= lut[ *(source) & 0b00001111];         
+        {
+            *(--target) |= lut[ *(source) & 0b00001111];
             *(--target) |= lut[ *(source++) >> 4];
         }
-    }    
+    }
 };
 
 class Dotstar : public LedDriver, public DmaClient
@@ -485,7 +485,7 @@ class Dotstar : public LedDriver, public DmaClient
             LedDriver(_ledsNumber, _datapin, _clockpin, _dmaSize)
     {
         dmaConfigure(pio0, 0);
-        resetTime = _resetTime;   
+        resetTime = _resetTime;
 
         spi_init(spi_default, 10000000);
         gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
@@ -496,7 +496,7 @@ class Dotstar : public LedDriver, public DmaClient
         bi_decl(bi_1pin_with_name(PICO_DEFAULT_SPI_CSN_PIN, "SPI CS"));
 
         initDmaSpi(_dmaSize);
-    }    
+    }
 
     uint8_t* getBufferMemory()
     {
@@ -544,7 +544,7 @@ class DotstarType : public Dotstar
         memset(buffer,0 ,4);
         *(reinterpret_cast<colorData*>(buffer)+ledsNumber+1) = colorData(0xff);
         renderDma();
-    }    
+    }
 };
 
 Neopixel* NeopixelParallel::muxer = nullptr;
@@ -562,4 +562,3 @@ typedef NeopixelType<450, ColorGrbw> sk6812;
 typedef NeopixelParallelType<300, ColorGrb> ws2812p;
 typedef NeopixelParallelType<80, ColorGrbw> sk6812p;
 typedef DotstarType<100, ColorDotstartBgr> apa102;
-
