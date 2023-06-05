@@ -29,8 +29,8 @@ In the system file explorer you should find new drive (e.g. called `RPI-RP2` dri
 The Pico will reset automaticly after the upload and after few seconds it will be ready to use by HyperHDR as a serial port device using Adalight driver.
 
 # HyperHDR configuration
-You need HyperHDR v20 or newer. Make sure you have enabled `AWA protocol` and `Esp8266/ESP32/Rp2040 handshake` options.  
-You can leave the speed at `2000000` because the CDC driver should use the highest possible speed automatically (at least it happens on Windows).  
+You need HyperHDR v20 or newer. Make sure you have enabled `AWA protocol` and `Esp8266/ESP32/Rp2040 handshake` options. You can leave the speed at `2000000` because the CDC driver should use the highest possible speed automatically (at least it happens on Windows).  
+
 ![obraz](https://user-images.githubusercontent.com/69086569/236870662-12f67d14-c2ca-4ba1-b6a3-e34c27949d19.png)
 
 # Default pinout
@@ -42,8 +42,7 @@ rp2040 allows hardware SPI on corresponding pairs of pins:
 spi0 ⇒ Data/Clock: GPIO3/GPIO2, GPIO19/GPIO18, GPIO7/GPIO6  
 spi1 ⇒ Data/Clock: GPIO12/GPIO10, GPIO8/GPIO06, GPIO28/GPI26  
 
-Pinout can be changed, but you need to make changes to `CMakeList.txt` (e.g. `OUTPUT_DATA_PIN`/`OUTPUT_SPI_DATA_PIN`/`OUTPUT_SPI_CLOCK_PIN`) and recompile the project. Also multi-segment mode can be enabled in this file: `SECOND_SEGMENT_INDEX` option at the beginning and optionally `SECOND_SEGMENT_REVERSED`.  
-Once compiled, the results can be found in the `firmwares` folder.  
+Pinout can be changed, but you need to make changes to `CMakeList.txt` (e.g. `OUTPUT_DATA_PIN` / `OUTPUT_SPI_DATA_PIN` / `OUTPUT_SPI_CLOCK_PIN`) and recompile the project. Also multi-segment mode can be enabled in this file: `SECOND_SEGMENT_INDEX` option at the beginning and optionally `SECOND_SEGMENT_REVERSED`. Once compiled, the results can be found in the `firmwares` folder.  
 
 # Some benchmark results
 
