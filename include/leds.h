@@ -481,13 +481,13 @@ class Dotstar : public LedDriver, public DmaClient
     friend class NeopixelParallel;
 
     public:
-    Dotstar(uint64_t _resetTime, int _ledsNumber, uint32_t _datapin, uint32_t _clockpin, int _dmaSize):
+    Dotstar(uint64_t _resetTime, int _ledsNumber, spi_inst_t* _spi, uint32_t _datapin, uint32_t _clockpin, int _dmaSize):
             LedDriver(_ledsNumber, _datapin, _clockpin, _dmaSize)
     {
         dmaConfigure(pio0, 0);
         resetTime = _resetTime;
 
-        spi_init(spi_default, 10000000);
+        spi_init(_spi, 10000000);
         gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
         gpio_init(PICO_DEFAULT_SPI_CSN_PIN);
         gpio_set_function(_clockpin, GPIO_FUNC_SPI);
@@ -527,7 +527,8 @@ class DotstarType : public Dotstar
 {
     public:
 
-    DotstarType(int _ledsNumber, int _dataPin, int _clockPin) : Dotstar(RESET_TIME, _ledsNumber, _dataPin, _clockPin, (_ledsNumber + 2) * sizeof(colorData))
+    DotstarType(int _ledsNumber, spi_inst_t* _spi, int _dataPin, int _clockPin) : 
+        Dotstar(RESET_TIME, _ledsNumber, _spi, _dataPin, _clockPin, (_ledsNumber + 2) * sizeof(colorData))
     {
     }
 
