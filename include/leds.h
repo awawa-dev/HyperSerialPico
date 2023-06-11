@@ -246,12 +246,12 @@ class DmaClient
         assignDmaIrq();
     };
 
-    void initDmaSpi(uint dataLenByte8)
+    void initDmaSpi(spi_inst_t* _spi, uint dataLenByte8)
     {
         dma_channel_config dmaConfig = dma_channel_get_default_config(PICO_DMA_CHANNEL);
         channel_config_set_transfer_data_size(&dmaConfig, DMA_SIZE_8);
-        channel_config_set_dreq(&dmaConfig, spi_get_dreq(spi_default, true));
-        dma_channel_configure(PICO_DMA_CHANNEL, &dmaConfig,&spi_get_hw(spi_default)->dr, NULL, dataLenByte8, false);
+        channel_config_set_dreq(&dmaConfig, spi_get_dreq(_spi, true));
+        dma_channel_configure(PICO_DMA_CHANNEL, &dmaConfig,&spi_get_hw(_spi)->dr, NULL, dataLenByte8, false);
 
         assignDmaIrq();
     };
@@ -487,15 +487,12 @@ class Dotstar : public LedDriver, public DmaClient
         dmaConfigure(pio0, 0);
         resetTime = _resetTime;
 
-        spi_init(_spi, 10000000);
-        gpio_set_function(PICO_DEFAULT_SPI_RX_PIN, GPIO_FUNC_SPI);
-        gpio_init(PICO_DEFAULT_SPI_CSN_PIN);
+        spi_init(_spi, 10000000);        
         gpio_set_function(_clockpin, GPIO_FUNC_SPI);
         gpio_set_function(_datapin, GPIO_FUNC_SPI);
-        bi_decl(bi_3pins_with_func(PICO_DEFAULT_SPI_RX_PIN, _datapin, _clockpin, GPIO_FUNC_SPI));
-        bi_decl(bi_1pin_with_name(PICO_DEFAULT_SPI_CSN_PIN, "SPI CS"));
+        bi_decl(bi_4pins_with_func(PICO_DEFAULT_SPI_RX_PIN, _datapin, _clockpin, PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI));
 
-        initDmaSpi(_dmaSize);
+        initDmaSpi(_spi, _dmaSize);
     }
 
     uint8_t* getBufferMemory()

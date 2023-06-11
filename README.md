@@ -40,7 +40,7 @@ You need HyperHDR v20 or newer. Make sure you have enabled `AWA protocol` and `E
 
 rp2040 allows hardware SPI on corresponding pairs of pins:  
 spi0 ⇒ Data/Clock: GPIO3/GPIO2, GPIO19/GPIO18, GPIO7/GPIO6  
-spi1 ⇒ Data/Clock: GPIO12/GPIO10, GPIO8/GPIO06, GPIO28/GPI26  
+spi1 ⇒ Data/Clock: GPIO11/GPIO10, GPI15/GPIO14, GPIO27/GPI26  
 
 Pinout can be changed, but you need to make changes to `CMakeList.txt` (e.g. `OUTPUT_DATA_PIN` / `OUTPUT_SPI_DATA_PIN` / `OUTPUT_SPI_CLOCK_PIN`) and recompile the project. Also multi-segment mode can be enabled in this file: `SECOND_SEGMENT_INDEX` option at the beginning and optionally `SECOND_SEGMENT_REVERSED`. Once compiled, the results can be found in the `firmwares` folder.  
 
