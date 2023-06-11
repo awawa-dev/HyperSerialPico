@@ -1,10 +1,13 @@
 # User configuration section starts here
 
-# Default output data pin for the LED strip
+# Default output data pin for the non-SPI LED strips (only for sk6812/ws2812b)
 set(OUTPUT_DATA_PIN 2)
 
-# Default output clock pin for the LED strip (SPI leds only, not for sk6812/ws2812b)
-set(OUTPUT_CLOCK_PIN 3)
+# Default output data/clocks pin for the SPI LED strips (only for apa102, not for sk6812/ws2812b)
+# only certain pairs of pins are allowed for selected SPI interface (refer to "readme.md")
+set(OUTPUT_SPI_DATA_PIN 3)
+set(OUTPUT_SPI_CLOCK_PIN 2)
+set(SPI_INTERFACE spi0)
 
 # Use multi-segment, starting index of second led strip or OFF to disable
 set(SECOND_SEGMENT_INDEX OFF)
@@ -62,7 +65,7 @@ endmacro()
 # targets for different LED strips
 IF(NOT SECOND_SEGMENT_INDEX)
     HyperSerialPicoTarget("HyperSerialPico_Spi")
-    target_compile_definitions(HyperSerialPico_Spi PRIVATE -DSPILED_APA102 -DDATA_PIN=${OUTPUT_DATA_PIN} -DCLOCK_PIN=${OUTPUT_CLOCK_PIN})
+    target_compile_definitions(HyperSerialPico_Spi PRIVATE -DSPILED_APA102 -DSPI_INTERFACE=${SPI_INTERFACE} -DDATA_PIN=${OUTPUT_SPI_DATA_PIN} -DCLOCK_PIN=${OUTPUT_SPI_CLOCK_PIN})
     HyperSerialPicoTarget("HyperSerialPico_sk6812Cold")
     target_compile_definitions(HyperSerialPico_sk6812Cold PRIVATE -DNEOPIXEL_RGBW -DCOLD_WHITE -DDATA_PIN=${OUTPUT_DATA_PIN})
     HyperSerialPicoTarget("HyperSerialPico_sk6812Neutral")
