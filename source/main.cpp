@@ -72,6 +72,7 @@
 
 #ifdef SPILED_APA102
 	#define LED_DRIVER apa102
+	#pragma message(VAR_NAME_VALUE(SPI_INTERFACE))
 #endif
 
 	#pragma message(VAR_NAME_VALUE(DATA_PIN))

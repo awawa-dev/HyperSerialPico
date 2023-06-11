@@ -104,7 +104,7 @@ class Base
 				#if defined(NEOPIXEL_RGBW) || defined(NEOPIXEL_RGB)
 					ledStrip1 = new LED_DRIVER(ledsNumber, DATA_PIN);
 				#else
-					ledStrip1 = new LED_DRIVER(ledsNumber, DATA_PIN, CLOCK_PIN);
+					ledStrip1 = new LED_DRIVER(ledsNumber, SPI_INTERFACE, DATA_PIN, CLOCK_PIN);
 				#endif
 			}
 		}
