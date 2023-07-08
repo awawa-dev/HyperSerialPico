@@ -71,6 +71,7 @@
 #include <hardware/dma.h>
 #include <hardware/clocks.h>
 #include <neopixel.pio.h>
+#include <neopixel_ws2812b.pio.h>
 #include <pico/stdlib.h>
 #include <pico/binary_info.h>
 #include <algorithm>
@@ -291,6 +292,8 @@ class DmaClient
 	}
 };
 
+enum class NeopixelSubtype {ws2812b, sk6812};
+
 class Neopixel : public LedDriver, public DmaClient
 {
 
@@ -299,7 +302,7 @@ class Neopixel : public LedDriver, public DmaClient
 	friend class NeopixelParallel;
 
 	public:
-	Neopixel(int lanes, uint64_t _resetTime, int _ledsNumber, int _pin, int _dmaSize, bool alignTo24 = false):
+	Neopixel(NeopixelSubtype timingType, int lanes, uint64_t _resetTime, int _ledsNumber, int _pin, int _dmaSize, bool alignTo24 = false):
 			LedDriver(_ledsNumber, _pin, _dmaSize)
 	{
 		pio_sm_config smConfig;
@@ -310,19 +313,29 @@ class Neopixel : public LedDriver, public DmaClient
 
 		if (lanes >= 1)
 		{
-			programAddress = pio_add_program(selectedPIO,  &neopixel_parallel_program);
+			programAddress = (timingType == NeopixelSubtype::ws2812b) ?
+				pio_add_program(selectedPIO,  &neopixel_ws2812b_parallel_program) : pio_add_program(selectedPIO,  &neopixel_parallel_program);
+
 			for(uint i=_pin; i<_pin + lanes; i++){
 				pio_gpio_init(selectedPIO, i);
 			}
-			smConfig = neopixel_parallel_program_get_default_config(programAddress);
+
+			smConfig = (timingType == NeopixelSubtype::ws2812b) ?
+				neopixel_ws2812b_parallel_program_get_default_config(programAddress) : neopixel_parallel_program_get_default_config(programAddress);
+
 			sm_config_set_out_pins(&smConfig, _pin, lanes);
 			sm_config_set_set_pins(&smConfig, _pin, lanes);
 		}
 		else
 		{
-			programAddress = pio_add_program(selectedPIO,  &neopixel_program);
+			programAddress = (timingType == NeopixelSubtype::ws2812b) ?
+				pio_add_program(selectedPIO,  &neopixel_ws2812b_program) : pio_add_program(selectedPIO,  &neopixel_program);
+
 			pio_gpio_init(selectedPIO, _pin);
-			smConfig = neopixel_program_get_default_config(programAddress);
+
+			smConfig = (timingType == NeopixelSubtype::ws2812b) ?
+				neopixel_ws2812b_program_get_default_config(programAddress) : neopixel_program_get_default_config(programAddress);
+				
 			sm_config_set_sideset_pins(&smConfig, _pin);
 		}
 
@@ -364,12 +377,13 @@ class Neopixel : public LedDriver, public DmaClient
 	}
 };
 
-template<int RESET_TIME, typename colorData>
+template<NeopixelSubtype _type, int RESET_TIME, typename colorData>
 class NeopixelType : public Neopixel
 {
 	public:
 
-	NeopixelType(int _ledsNumber, int _pin) : Neopixel(0, RESET_TIME, _ledsNumber, _pin, _ledsNumber * sizeof(colorData), colorData::isAlignedTo24())
+	NeopixelType(int _ledsNumber, int _pin) :
+		Neopixel(_type, 0, RESET_TIME, _ledsNumber, _pin, _ledsNumber * sizeof(colorData), colorData::isAlignedTo24())
 	{
 	}
 
@@ -400,13 +414,13 @@ class NeopixelParallel
 
 	public:
 
-	NeopixelParallel(size_t pixelSize, uint64_t _resetTime, int _ledsNumber, int _pin):
+	NeopixelParallel(NeopixelSubtype _type, size_t pixelSize, uint64_t _resetTime, int _ledsNumber, int _pin):
 					myLaneMask(1 << (instances++))
 	{
 		maxLeds = std::max(maxLeds, _ledsNumber);
 
 		delete muxer;
-		muxer = new Neopixel(instances, _resetTime, maxLeds, _pin, maxLeds * 8 * pixelSize );
+		muxer = new Neopixel(_type, instances, _resetTime, maxLeds, _pin, maxLeds * 8 * pixelSize );
 		buffer = muxer->getBufferMemory();
 	}
 
@@ -440,15 +454,15 @@ class NeopixelParallel
 	}
 };
 
-template<int RESET_TIME, typename colorData>
+template<NeopixelSubtype _type, int RESET_TIME, typename colorData>
 class NeopixelParallelType : public NeopixelParallel
 {
 	uint32_t lut[16];
 
 	public:
 
-	NeopixelParallelType(int _ledsNumber, int _basePinForLanes) : NeopixelParallel(sizeof(colorData), RESET_TIME,
-														_ledsNumber, _basePinForLanes)
+	NeopixelParallelType(int _ledsNumber, int _basePinForLanes) :
+		NeopixelParallel(_type, sizeof(colorData), RESET_TIME, _ledsNumber, _basePinForLanes)
 	{
 		for (uint8_t a = 0; a < 16; a++)
 		{
@@ -555,8 +569,8 @@ volatile bool DmaClient::isDmaBusy = false;
 
 
 // API classes
-typedef NeopixelType<650, ColorGrb32> ws2812;
-typedef NeopixelType<450, ColorGrbw> sk6812;
-typedef NeopixelParallelType<300, ColorGrb> ws2812p;
-typedef NeopixelParallelType<80, ColorGrbw> sk6812p;
+typedef NeopixelType<NeopixelSubtype::ws2812b, 650, ColorGrb32> ws2812;
+typedef NeopixelType<NeopixelSubtype::sk6812, 450, ColorGrbw> sk6812;
+typedef NeopixelParallelType<NeopixelSubtype::ws2812b, 300, ColorGrb> ws2812p;
+typedef NeopixelParallelType<NeopixelSubtype::sk6812, 80, ColorGrbw> sk6812p;
 typedef DotstarType<100, ColorDotstartBgr> apa102;
