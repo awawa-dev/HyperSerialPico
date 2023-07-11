@@ -26,7 +26,7 @@ It's very easy and you don't need any special flasher.
 \
 For HyperHDR and generic rp2040 choose `HyperSerialPico_<type>.uf2` firmware where *type* is one of supported LEDs: sk6812 cold/neutral white, variants of ws2812 and apa102. \
 \
-Because we want to promote rp2040 boards for HyperHDR with a built-in 3.3V to 5V level shifter, we also provide firmwares compiled to their GPIO specifications. You can find these firmwares & short manuals in the archives: `Adafruit_Feather_RP2040_Scorpio.zip`, `Pimoroni_Plasma_2040.zip`, `Pimoroni_Plasma_Stick_2040_W.zip`.  \
+Due to the often neglected issue of the required 5 volt logic necessary for the correct operation of the supported LEDs, we want to promote rp2040 boards with a built-in 3.3V to 5V level shifter and we provide firmwares compiled to their GPIO specifications. You can find these firmwares & short pin-out manuals in the archives: `Adafruit_Feather_RP2040_Scorpio.zip`, `Pimoroni_Plasma_2040.zip`, `Pimoroni_Plasma_Stick_2040_W.zip`. Also you can read about their specific GPIO output in the `Recommended boards with a built-in level shifter` section above.  \
 \
 If you are using an application other than HyperHDR, select the `classic_adalight.zip` archive, unzip it and select `classic_adalight_HyperSerialPico_<type>.uf2` firmware (note: do not use firmwares from this archive for HyperHDR, they do not support my AWA protocol extension, missing many options and are simply only backwards compatible with other applications).  
   
