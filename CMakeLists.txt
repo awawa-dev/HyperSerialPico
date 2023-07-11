@@ -7,7 +7,7 @@ set(OUTPUT_DATA_PIN 2)
 # only certain pairs of pins are allowed for selected SPI interface (refer to "readme.md")
 set(OUTPUT_SPI_DATA_PIN 3)
 set(OUTPUT_SPI_CLOCK_PIN 2)
-set(SPI_INTERFACE spi0)
+set(OUTPUT_SPI_INTERFACE spi0)
 
 # Use multi-segment, starting index of second led strip or OFF to disable
 set(SECOND_SEGMENT_INDEX OFF)
@@ -51,6 +51,42 @@ set(HyperSerialPicoCompanionIncludes ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/generated)
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/firmwares)
 
+if(NOT CMAKE_HOST_WIN32)
+	string(ASCII 27 EscChar)
+	set(ColorReset  "${EscChar}[m")
+	set(GreenColor  "${EscChar}[32m")
+	set(YellowColor "${EscChar}[33m")	
+endif()
+
+if (OVERRIDE_DATA_PIN)
+	set(OUTPUT_DATA_PIN ${OVERRIDE_DATA_PIN})
+	message( STATUS "${YellowColor}Overriding Neopixel Data GPIO: ${OUTPUT_DATA_PIN}${ColorReset}")
+endif()
+
+if (OVERRIDE_SPI_DATA_PIN)
+	set(OUTPUT_SPI_DATA_PIN ${OVERRIDE_SPI_DATA_PIN})
+	message( STATUS "${YellowColor}Overriding SPI Data GPIO: ${OUTPUT_SPI_DATA_PIN}${ColorReset}")
+endif()
+
+if (OVERRIDE_SPI_CLOCK_PIN)
+	set(OUTPUT_SPI_CLOCK_PIN ${OVERRIDE_SPI_CLOCK_PIN})
+	message( STATUS "${YellowColor}Overriding SPI Clock GPIO: ${OUTPUT_SPI_CLOCK_PIN}${ColorReset}")
+endif()
+
+if (OVERRIDE_SPI_INTERFACE)
+	set(OUTPUT_SPI_INTERFACE ${OVERRIDE_SPI_INTERFACE})
+	message( STATUS "${YellowColor}Overriding SPI Interface: ${OUTPUT_SPI_INTERFACE}${ColorReset}")
+endif()
+
+message( STATUS "---------------------------")
+message( STATUS "Neopixel Data GPIO: ${GreenColor}${OUTPUT_DATA_PIN}${ColorReset}")
+message( STATUS "SPI Data GPIO: ${GreenColor}${OUTPUT_SPI_DATA_PIN}${ColorReset}")
+message( STATUS "SPI Clock GPIO: ${GreenColor}${OUTPUT_SPI_CLOCK_PIN}${ColorReset}")
+message( STATUS "SPI Interface: ${GreenColor}${OUTPUT_SPI_INTERFACE}${ColorReset}")
+message( STATUS "---------------------------")
+
+add_compile_options(-ftrack-macro-expansion=0 -fno-diagnostics-show-caret -fdiagnostics-color=auto)
+
 macro(HyperSerialPicoTarget HyperSerialPicoTargetName)
     add_executable(${HyperSerialPicoTargetName} ${CMAKE_SOURCE_DIR}/source/main.cpp)
     target_include_directories(${HyperSerialPicoTargetName} PRIVATE ${HyperSerialPicoCompanionIncludes})
@@ -66,7 +102,7 @@ endmacro()
 # targets for different LED strips
 IF(NOT SECOND_SEGMENT_INDEX)
     HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_Spi")
-    target_compile_definitions("${CMAKE_PROJECT_NAME}_Spi" PRIVATE -DSPILED_APA102 -DSPI_INTERFACE=${SPI_INTERFACE} -DDATA_PIN=${OUTPUT_SPI_DATA_PIN} -DCLOCK_PIN=${OUTPUT_SPI_CLOCK_PIN})
+    target_compile_definitions("${CMAKE_PROJECT_NAME}_Spi" PRIVATE -DSPILED_APA102 -DSPI_INTERFACE=${OUTPUT_SPI_INTERFACE} -DDATA_PIN=${OUTPUT_SPI_DATA_PIN} -DCLOCK_PIN=${OUTPUT_SPI_CLOCK_PIN})
     HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_sk6812Cold")
     target_compile_definitions("${CMAKE_PROJECT_NAME}_sk6812Cold" PRIVATE -DNEOPIXEL_RGBW -DCOLD_WHITE -DDATA_PIN=${OUTPUT_DATA_PIN})
     HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_sk6812Neutral")
