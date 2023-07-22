@@ -49,7 +49,7 @@ pico_sdk_init()
 set(HyperSerialPicoCompanionLibs FreeRTOS-Kernel FreeRTOS-Kernel-Heap1 pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi)
 set(HyperSerialPicoCompanionIncludes ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/sdk/config)
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/generated)
-file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/firmwares)
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/firmware)
 
 if(NOT CMAKE_HOST_WIN32)
 	string(ASCII 27 EscChar)
@@ -96,7 +96,7 @@ macro(HyperSerialPicoTarget HyperSerialPicoTargetName)
     pico_enable_stdio_uart(${HyperSerialPicoTargetName} 0)
     pico_generate_pio_header(${HyperSerialPicoTargetName} ${CMAKE_SOURCE_DIR}/pio/neopixel.pio OUTPUT_DIR ${CMAKE_SOURCE_DIR}/generated)
     pico_generate_pio_header(${HyperSerialPicoTargetName} ${CMAKE_SOURCE_DIR}/pio/neopixel_ws2812b.pio OUTPUT_DIR ${CMAKE_SOURCE_DIR}/generated)
-    add_custom_command(TARGET ${HyperSerialPicoTargetName} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${HyperSerialPicoTargetName}.uf2 ${CMAKE_SOURCE_DIR}/firmwares)
+    add_custom_command(TARGET ${HyperSerialPicoTargetName} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${HyperSerialPicoTargetName}.uf2 ${CMAKE_SOURCE_DIR}/firmware)
 endmacro()
 
 # targets for different LED strips
