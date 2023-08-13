@@ -1,5 +1,10 @@
 # User configuration section starts here
 
+# Some boards, such as the first Adafruit revisions, may have trouble booting properly
+# due to bad componets used in the design.
+# Turn this setting to ON if your rp2040 is not detected after firmware upload and reset
+set(BOOT_WORKAROUND OFF)
+
 # Default output data pin for the non-SPI LED strips (only for sk6812/ws2812b)
 set(OUTPUT_DATA_PIN 2)
 
@@ -78,17 +83,26 @@ if (OVERRIDE_SPI_INTERFACE)
 	message( STATUS "${YellowColor}Overriding SPI Interface: ${OUTPUT_SPI_INTERFACE}${ColorReset}")
 endif()
 
+if (OVERRIDE_BOOT_WORKAROUND)
+	set(BOOT_WORKAROUND ${OVERRIDE_BOOT_WORKAROUND})
+	message( STATUS "${YellowColor}Overriding boot workaround: ${BOOT_WORKAROUND}${ColorReset}")
+endif()
+
 message( STATUS "---------------------------")
 message( STATUS "Neopixel Data GPIO: ${GreenColor}${OUTPUT_DATA_PIN}${ColorReset}")
 message( STATUS "SPI Data GPIO: ${GreenColor}${OUTPUT_SPI_DATA_PIN}${ColorReset}")
 message( STATUS "SPI Clock GPIO: ${GreenColor}${OUTPUT_SPI_CLOCK_PIN}${ColorReset}")
 message( STATUS "SPI Interface: ${GreenColor}${OUTPUT_SPI_INTERFACE}${ColorReset}")
+message( STATUS "Boot workaround: ${GreenColor}${BOOT_WORKAROUND}${ColorReset}")
 message( STATUS "---------------------------")
 
 add_compile_options(-ftrack-macro-expansion=0 -fno-diagnostics-show-caret -fdiagnostics-color=auto)
 
 macro(HyperSerialPicoTarget HyperSerialPicoTargetName)
     add_executable(${HyperSerialPicoTargetName} ${CMAKE_SOURCE_DIR}/source/main.cpp)
+    if (BOOT_WORKAROUND)
+        target_compile_definitions(${HyperSerialPicoTargetName} PUBLIC -DBOOT_WORKAROUND -DPICO_XOSC_STARTUP_DELAY_MULTIPLIER=64)
+    endif()
     target_include_directories(${HyperSerialPicoTargetName} PRIVATE ${HyperSerialPicoCompanionIncludes})
     target_link_libraries(${HyperSerialPicoTargetName} ${HyperSerialPicoCompanionLibs})
     pico_add_extra_outputs(${HyperSerialPicoTargetName})
