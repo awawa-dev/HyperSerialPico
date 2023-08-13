@@ -6,7 +6,7 @@
 sdk/pico
 build/*
 generated/
-firmwares/
+firmware/
 
 # User-specific files
 *.rsuser

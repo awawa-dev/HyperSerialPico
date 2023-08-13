@@ -51,6 +51,12 @@
 #define _XSTR2(x,y) _STR(x) _STR(y)
 #define VAR_NAME_VALUE2(var) #var " = " _XSTR2(var)
 
+#if defined(BOOT_WORKAROUND) && defined(PICO_XOSC_STARTUP_DELAY_MULTIPLIER)
+	#pragma message("Enabling boot workaround")
+	#pragma message(VAR_NAME_VALUE(PICO_XOSC_STARTUP_DELAY_MULTIPLIER))
+#endif
+
+
 #ifdef NEOPIXEL_RGBW
 	#pragma message(VAR_NAME_VALUE(NEOPIXEL_RGBW))
 #endif
