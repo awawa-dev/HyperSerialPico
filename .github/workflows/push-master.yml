@@ -28,9 +28,9 @@ jobs:
         cd build
         cmake ..
         cmake --build . --config Release
-        cd ../firmwares
+        cd ../firmware
         for f in *.uf2 ; do mv -- "$f" "classic_adalight_$f" ; done
-        touch not_for_HyperHDR_firmwares.txt
+        touch not_for_HyperHDR_firmware.txt
 
     - uses: actions/upload-artifact@v3
       name: Upload artifacts (commit)
