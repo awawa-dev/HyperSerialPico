@@ -170,7 +170,7 @@ int main(void)
 
     xTaskCreate(core0,
             "HyperSerialPico:core0",
-            configMINIMAL_STACK_SIZE,
+            configMINIMAL_STACK_SIZE * 2,
             NULL,
             (configMAX_PRIORITIES - 1),
             &base.processSerialHandle);
