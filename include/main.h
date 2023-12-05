@@ -140,6 +140,9 @@ void processData()
 
 				if (input == 0x15)
 					printf(HELLO_MESSAGE);
+				
+				frameState.setRegroup(true);
+
 				delay(10);
 
 				currentTime = millis();
