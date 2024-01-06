@@ -62,7 +62,7 @@ if(NOT CMAKE_HOST_WIN32)
 	string(ASCII 27 EscChar)
 	set(ColorReset  "${EscChar}[m")
 	set(GreenColor  "${EscChar}[32m")
-	set(YellowColor "${EscChar}[33m")	
+	set(YellowColor "${EscChar}[33m")
 endif()
 
 if (OVERRIDE_DATA_PIN)
