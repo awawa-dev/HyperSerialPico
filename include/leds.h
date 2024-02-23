@@ -4,7 +4,7 @@
 *
 *  MIT License
 *
-*  Copyright (c) 2023 awawa-dev
+*  Copyright (c) 2023-2024 awawa-dev
 *
 *  https://github.com/awawa-dev/HyperSerialPico
 *
@@ -335,7 +335,7 @@ class Neopixel : public LedDriver, public DmaClient
 
 			smConfig = (timingType == NeopixelSubtype::ws2812b) ?
 				neopixel_ws2812b_program_get_default_config(programAddress) : neopixel_program_get_default_config(programAddress);
-				
+
 			sm_config_set_sideset_pins(&smConfig, _pin);
 		}
 
@@ -501,7 +501,7 @@ class Dotstar : public LedDriver, public DmaClient
 		dmaConfigure(pio0, 0);
 		resetTime = _resetTime;
 
-		spi_init(_spi, 10000000);        
+		spi_init(_spi, 10000000);
 		gpio_set_function(_clockpin, GPIO_FUNC_SPI);
 		gpio_set_function(_datapin, GPIO_FUNC_SPI);
 		bi_decl(bi_4pins_with_func(PICO_DEFAULT_SPI_RX_PIN, _datapin, _clockpin, PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI));
@@ -538,7 +538,7 @@ class DotstarType : public Dotstar
 {
 	public:
 
-	DotstarType(int _ledsNumber, spi_inst_t* _spi, int _dataPin, int _clockPin) : 
+	DotstarType(int _ledsNumber, spi_inst_t* _spi, int _dataPin, int _clockPin) :
 		Dotstar(RESET_TIME, _ledsNumber, _spi, _dataPin, _clockPin, (_ledsNumber + 2) * sizeof(colorData))
 	{
 	}

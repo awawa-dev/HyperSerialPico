@@ -2,7 +2,7 @@
 *
 *  MIT License
 *
-*  Copyright (c) 2023 awawa-dev
+*  Copyright (c) 2023-2024 awawa-dev
 *
 *  https://github.com/awawa-dev/HyperSerialPico
 *
@@ -140,7 +140,7 @@ void processData()
 
 				if (input == 0x15)
 					printf(HELLO_MESSAGE);
-				
+
 				frameState.setRegroup(true);
 
 				delay(10);
