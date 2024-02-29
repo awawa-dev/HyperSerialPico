@@ -4,7 +4,7 @@ if (NOT PICO_PROGRAM_MAIN_ENTRY)
 	# Some boards, such as the first Adafruit revisions, may have trouble booting properly
 	# due to bad componets used in the design.
 	# Turn this setting to ON if your rp2040 is not detected after firmware upload and reset
-	set(BOOT_WORKAROUND OFF)
+	set(BOOT_WORKAROUND ON)
 
 	# Default output data pin for the non-SPI LED strips (only for sk6812/ws2812b)
 	set(OUTPUT_DATA_PIN 2)
