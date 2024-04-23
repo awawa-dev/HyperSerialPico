@@ -14,12 +14,12 @@ Adalight serial port LED driver implementation for Raspberry Pi Pico RP2040.
 # Recommended boards with a built-in level shifter
 To ensure the LEDs will work properly with the Pico board, a 3.3V to 5V level shifter is needed. You can use an external one e.g. SN74AHCT125N or just buy a model of rp2040 that already has it built-in:
 
-| Device             |    Output   |    Photo   |
-|------------------------------------|:------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| Adafruit Feather RP2040 Scorpio    |       GPIO16-23    |        <img src="https://user-images.githubusercontent.com/69086569/242393809-4e491159-76c7-4c1e-be0a-1f10cd5291f2.png"  width="200" height="200"/>        |
-| Adafruit ItsyBitsy RP2040          |       GPIO14       |        <img src="https://github.com/awawa-dev/HyperSerialPico/assets/69086569/e7a2a945-be12-47b1-8e48-ffc1b11c5b2f.png"  width="200" height="200"/>        |
-| Pimoroni Plasma 2040               |       GPIO14-15    |        <img src="https://user-images.githubusercontent.com/69086569/241395006-ee27175e-677b-4971-97bc-ed294eaa8f3b.png" width="200" height="200"/>         |
-| Pimoroni Plasma Stick 2040 W       |       GPIO15       |        <img src="https://user-images.githubusercontent.com/69086569/241394387-f8193ed8-56d5-46c6-b406-911720aed605.png" width="200" height="200"/></p>     |
+| Device             |    GPIO16   |    Photo   |
+|------------------------------------|:--------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| Adafruit Feather RP2040 Scorpio    |       23       |        <img src="https://user-images.githubusercontent.com/69086569/242393809-4e491159-76c7-4c1e-be0a-1f10cd5291f2.png"  width="200" height="200"/>        |
+| Adafruit ItsyBitsy RP2040          |       14       |        <img src="https://github.com/awawa-dev/HyperSerialPico/assets/69086569/e7a2a945-be12-47b1-8e48-ffc1b11c5b2f.png"  width="200" height="200"/>        |
+| Pimoroni Plasma 2040               |       14-15    |        <img src="https://user-images.githubusercontent.com/69086569/241395006-ee27175e-677b-4971-97bc-ed294eaa8f3b.png" width="200" height="200"/>         |
+| Pimoroni Plasma Stick 2040 W       |       15       |        <img src="https://user-images.githubusercontent.com/69086569/241394387-f8193ed8-56d5-46c6-b406-911720aed605.png" width="200" height="200"/></p>     |
 
 # Supported LED strips
 | LED strip / Device             |    Single lane   |    Multi-segment   |
