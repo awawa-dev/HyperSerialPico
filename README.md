@@ -59,14 +59,8 @@ Of course, you can also build your custom firmware completely online using Githu
 
 # Some benchmark results
 
-| Single RGBW LED strip                          | Max. refresh rate |
-|------------------------------------------------|-------------------|
-| 300LEDs RGBW<br>Refresh rate/continues output  |         83        |
-| 600LEDs RGBW<br>Refresh rate/continues output  |         42        |
-| 900LEDs RGBW<br>Refresh rate/continues output  |         28        |
-
-| Parallel multi-segment mode                           | Max. refresh rate |
-|---------------------------------------------------------------------------|----------------------|
-| 300LEDs RGBW<br>Refresh rate/continues output<br>SECOND_SEGMENT_INDEX=150 |          100         |
-| 600LEDs RGBW<br>Refresh rate/continues output<br>SECOND_SEGMENT_INDEX=300 |           83         |
-| 900LEDs RGBW<br>Refresh rate/continues output<br>SECOND_SEGMENT_INDEX=450 |           55         |
+| Single LED strip | Max. refresh rate | Parallel multi-segment mode | Max. refresh rate |
+|------------------|:-----------------:|-----------------------------|:-----------------:|
+| 300LEDs RGBW  |  83  | 300LEDs RGBW<br>SECOND_SEGMENT_INDEX=150 |  100  |
+| 600LEDs RGBW  |  42  | 600LEDs RGBW<br>SECOND_SEGMENT_INDEX=300 |   83  |
+| 900LEDs RGBW  |  28  | 900LEDs RGBW<br>SECOND_SEGMENT_INDEX=450 |   55  |
