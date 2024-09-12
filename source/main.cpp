@@ -160,6 +160,11 @@ int main(void)
 {
     stdio_init_all();
 
+    const uint RELAY_PIN = 15;
+    gpio_init(RELAY_PIN);
+    gpio_set_dir(RELAY_PIN, GPIO_OUT);
+    gpio_put(RELAY_PIN, 1);
+
     sem_init(&base.serialSemaphore, 0, 1);
 
     sem_init(&base.receiverSemaphore, 0, 1);
