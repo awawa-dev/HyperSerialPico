@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.2.0
       with:
         submodules: recursive
 
@@ -29,18 +29,18 @@ jobs:
         cmake ..
         cmake --build . --config Release
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4.4.0
       name: Upload artifacts (commit)
       if: (startsWith(github.event.ref, 'refs/tags') != true)
       with:
         path: |
           firmware/*.uf2
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4.4.0
       name: Upload artifacts (release)
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: firmware-release
+        name: firmware-release-generic
         path: |
           firmware/*.uf2
 
@@ -57,11 +57,11 @@ jobs:
         cmake --build .
         zip -j ../firmware/Adafruit_Feather_RP2040_Scorpio.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4.4.0
       name: Upload artifacts (release Adafruit_Feather)
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: firmware-release
+        name: firmware-release-adafruit-scorpio
         path: |
           firmware/*.zip
 
@@ -78,11 +78,11 @@ jobs:
         rm ../firmware/*_Spi.uf2
         zip -j ../firmware/Adafruit_ItsyBitsy_2040.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4.4.0
       name: Upload artifacts (release Adafruit_ItsyBitsy)
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: firmware-release
+        name: firmware-release-adafruit-itsybitsy
         path: |
           firmware/*.zip
 
@@ -99,11 +99,11 @@ jobs:
         rm ../firmware/*_Spi.uf2
         zip -j ../firmware/Pimoroni_Plasma_Stick_2040_W.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4.4.0
       name: Upload artifacts (release Pimoroni_Plasma_Stick_W)
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: firmware-release
+        name: firmware-release-pimoroni-plasma-stick
         path: |
           firmware/*.zip
 
@@ -120,11 +120,11 @@ jobs:
         cmake --build .
         zip -j ../firmware/Pimoroni_Plasma_2040.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4.4.0
       name: Upload artifacts (release Pimoroni_Plasma)
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: firmware-release
+        name: firmware-release-pimoroni-plasma
         path: |
           firmware/*.zip
 
@@ -151,13 +151,15 @@ jobs:
         if: contains(env.VERSION, 'alpha') || contains(env.VERSION, 'beta')
         run: echo "preRelease=true" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.8
         with:
           name: firmware-release
+          pattern: firmware-release-*
+          merge-multiple: true
 
       # create draft release and upload artifacts
       - name: Create draft release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2.0.8
         with:
           name: HyperSerialPico ${{ env.VERSION }}
           tag_name: ${{ env.TAG }}
