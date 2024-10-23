@@ -32,14 +32,14 @@ jobs:
         for f in *.uf2 ; do mv -- "$f" "classic_adalight_$f" ; done
         touch not_for_HyperHDR_firmware.txt
 
-    - uses: actions/upload-artifact@v4.4.0
+    - uses: actions/upload-artifact@v4.4.3
       name: Upload artifacts (commit)
       if: (startsWith(github.event.ref, 'refs/tags') != true)
       with:
         path: |
           firmware/*.uf2
 
-    - uses: actions/upload-artifact@v4.4.0
+    - uses: actions/upload-artifact@v4.4.3
       name: Upload artifacts (release)
       if: startsWith(github.ref, 'refs/tags/')
       with:
@@ -60,7 +60,7 @@ jobs:
         cmake --build .
         zip -j ../firmware/Adafruit_Feather_RP2040_Scorpio.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v4.4.0
+    - uses: actions/upload-artifact@v4.4.3
       name: Upload artifacts (release Adafruit_Feather)
       if: startsWith(github.ref, 'refs/tags/')
       with:
@@ -81,7 +81,7 @@ jobs:
         rm ../firmware/*_Spi.uf2
         zip -j ../firmware/Adafruit_ItsyBitsy_2040.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v4.4.0
+    - uses: actions/upload-artifact@v4.4.3
       name: Upload artifacts (release Adafruit_ItsyBitsy)
       if: startsWith(github.ref, 'refs/tags/')
       with:
@@ -102,7 +102,7 @@ jobs:
         rm ../firmware/*_Spi.uf2
         zip -j ../firmware/Pimoroni_Plasma_Stick_2040_W.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v4.4.0
+    - uses: actions/upload-artifact@v4.4.3
       name: Upload artifacts (release Pimoroni_Plasma_Stick_W)
       if: startsWith(github.ref, 'refs/tags/')
       with:
@@ -123,7 +123,7 @@ jobs:
         cmake --build .
         zip -j ../firmware/Pimoroni_Plasma_2040.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v4.4.0
+    - uses: actions/upload-artifact@v4.4.3
       name: Upload artifacts (release Pimoroni_Plasma)
       if: startsWith(github.ref, 'refs/tags/')
       with:
