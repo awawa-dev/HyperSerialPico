@@ -69,6 +69,9 @@
 #ifdef SPILED_APA102
 	#pragma message(VAR_NAME_VALUE(SPILED_APA102))
 #endif
+#ifdef SPILED_WS2801
+	#pragma message(VAR_NAME_VALUE(SPILED_WS2801))
+#endif
 
 #ifdef NEOPIXEL_RGBW
 	#define LED_DRIVER sk6812
@@ -78,6 +81,10 @@
 
 #ifdef SPILED_APA102
 	#define LED_DRIVER apa102
+	#pragma message(VAR_NAME_VALUE(SPI_INTERFACE))
+#endif
+#ifdef SPILED_WS2801
+	#define LED_DRIVER ws2801
 	#pragma message(VAR_NAME_VALUE(SPI_INTERFACE))
 #endif
 
