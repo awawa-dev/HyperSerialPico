@@ -155,6 +155,22 @@ struct ColorDotstartBgr
 	};
 };
 
+struct ColorRgb
+{
+	uint8_t R;
+	uint8_t G;
+	uint8_t B;
+
+	ColorRgb(uint8_t gray) :
+		R(gray), G(gray), B(gray)
+	{
+	};
+
+	ColorRgb() : R(0), G(0), B(0)
+	{
+	};
+};
+
 class LedDriver
 {
 	protected:
@@ -559,6 +575,73 @@ class DotstarType : public Dotstar
 	}
 };
 
+class Ws2801 : public LedDriver, public DmaClient
+{
+	uint64_t resetTime;
+
+	public:
+	Ws2801(uint64_t _resetTime, int _ledsNumber, spi_inst_t* _spi, uint32_t _datapin, uint32_t _clockpin, int _dmaSize):
+			LedDriver(_ledsNumber, _datapin, _clockpin, _dmaSize)
+	{
+		dmaConfigure(pio0, 0);
+		resetTime = _resetTime;
+
+		spi_init(_spi, 1000000);
+		gpio_set_function(_clockpin, GPIO_FUNC_SPI);
+		gpio_set_function(_datapin, GPIO_FUNC_SPI);
+		bi_decl(bi_4pins_with_func(PICO_DEFAULT_SPI_RX_PIN, _datapin, _clockpin, PICO_DEFAULT_SPI_CSN_PIN, GPIO_FUNC_SPI));
+
+		initDmaSpi(_spi, _dmaSize);
+	}
+
+	uint8_t* getBufferMemory()
+	{
+		return buffer;
+	}
+
+	protected:
+
+	void renderDma()
+	{
+		if (isDmaBusy)
+			return;
+
+		isDmaBusy = true;
+
+		uint64_t currentTime = time_us_64();
+		if (currentTime < resetTime + lastRenderTime)
+			busy_wait_us(std::min(resetTime + lastRenderTime - currentTime, resetTime));
+
+		memcpy(dma, buffer, dmaSize);
+
+		dma_channel_set_read_addr(PICO_DMA_CHANNEL, dma, true);
+	}
+};
+
+template<int RESET_TIME, typename colorData>
+class Ws2801Type : public Ws2801
+{
+	public:
+
+	Ws2801Type(int _ledsNumber, spi_inst_t* _spi, int _dataPin, int _clockPin) :
+		Ws2801(RESET_TIME, _ledsNumber, _spi, _dataPin, _clockPin, _ledsNumber * sizeof(colorData))
+	{
+	}
+
+	void SetPixel(int index, colorData color)
+	{
+		if (index >= ledsNumber)
+			return;
+
+		*(reinterpret_cast<colorData*>(buffer)+index) = color;
+	}
+
+	void renderSingleLane()
+	{
+		renderDma();
+	}
+};
+
 Neopixel* NeopixelParallel::muxer = nullptr;
 uint8_t* NeopixelParallel::buffer = nullptr;
 int NeopixelParallel::instances = 0;
@@ -574,3 +657,4 @@ typedef NeopixelType<NeopixelSubtype::sk6812, 450, ColorGrbw> sk6812;
 typedef NeopixelParallelType<NeopixelSubtype::ws2812b, 300, ColorGrb> ws2812p;
 typedef NeopixelParallelType<NeopixelSubtype::sk6812, 80, ColorGrbw> sk6812p;
 typedef DotstarType<100, ColorDotstartBgr> apa102;
+typedef Ws2801Type<500, ColorRgb> ws2801;

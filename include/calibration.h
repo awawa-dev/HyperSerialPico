@@ -35,6 +35,8 @@
 	#endif
 #elif SPILED_APA102
 	typedef ColorDotstartBgr ColorDefinition;
+#elif SPILED_WS2801
+	typedef ColorRgb ColorDefinition;
 #endif
 
 
