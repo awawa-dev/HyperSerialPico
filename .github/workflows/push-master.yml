@@ -158,7 +158,7 @@ jobs:
 
       # create draft release and upload artifacts
       - name: Create draft release
-        uses: softprops/action-gh-release@v2.2.2
+        uses: softprops/action-gh-release@v2.4.1
         with:
           name: HyperSerialPico ${{ env.VERSION }}
           tag_name: ${{ env.TAG }}
