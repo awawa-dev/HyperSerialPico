@@ -140,17 +140,17 @@ struct ColorGrbw
 
 struct ColorDotstartBgr
 {
-	uint8_t brightness;
+	uint8_t Brightness;
 	uint8_t B;
 	uint8_t G;
 	uint8_t R;
 
 	ColorDotstartBgr(uint8_t gray) :
-		R(gray), G(gray), B(gray), brightness(gray | 0b11100000)
+		R(gray), G(gray), B(gray), Brightness(gray | 0b11100000)
 	{
 	};
 
-	ColorDotstartBgr() : R(0), G(0), B(0), brightness(0xff)
+	ColorDotstartBgr() : R(0), G(0), B(0), Brightness(0xff)
 	{
 	};
 };
