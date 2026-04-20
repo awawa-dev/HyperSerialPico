@@ -19,7 +19,7 @@ jobs:
     - name: Install GNU Arm Embedded Toolchain
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
-        release: '12.2.Rel1'
+        release: '15.2.Rel1'
 
     - name: Build packages
       shell: bash
@@ -30,27 +30,35 @@ jobs:
         cmake --build . --config Release
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (commit)
-      if: (startsWith(github.event.ref, 'refs/tags') != true)
-      with:
-        path: |
-          firmware/*.uf2
-
-    - uses: actions/upload-artifact@v7.0.0
       name: Upload artifacts (release)
-      if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: firmware-release-generic
+        name: firmware-release-generic-rp2040
         path: |
           firmware/*.uf2
 
-    - name: Build packages for Adafruit Feather RP2040 Scorpio (release-only)
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Build packages for generic rp2350
       shell: bash
       run: |
         cd build
-        rm *.*
-        rm ../firmware/*
+        rm -rf *
+        rm -rf ../firmware/*
+        cmake -DTARGET_BOARD=pico2 -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build .
+        zip -j ../firmware/firmware_generic_rp2350.zip ../firmware/*
+
+    - uses: actions/upload-artifact@v7.0.0
+      name: Upload artifacts (release generic rp2350)
+      with:
+        name: firmware-release-generic-rp2350
+        path: |
+          firmware/*.zip
+
+    - name: Build packages for Adafruit Feather RP2040 Scorpio
+      shell: bash
+      run: |
+        cd build
+        rm -rf *
+        rm -rf ../firmware/*
         echo "Neopixel is using GPIO16(OUTPUT_DATA_PIN) on output 0." > ../firmware/Firmwares_for_Adafruit_Feather_RP2040_Scorpio.txt
         echo "SPI is using spi0 interface pins: GPIO19(OUTPUT_SPI_DATA_PIN) and GPIO18(OUTPUT_SPI_CLOCK_PIN) on output 3 and 2 respectively." >> ../firmware/Firmwares_for_Adafruit_Feather_RP2040_Scorpio.txt
         cmake -DOVERRIDE_BOOT_WORKAROUND=ON -DOVERRIDE_DATA_PIN=16 -DOVERRIDE_SPI_DATA_PIN=19 -DOVERRIDE_SPI_CLOCK_PIN=18 -DCMAKE_BUILD_TYPE=Release ..
@@ -59,19 +67,17 @@ jobs:
 
     - uses: actions/upload-artifact@v7.0.0
       name: Upload artifacts (release Adafruit_Feather)
-      if: startsWith(github.ref, 'refs/tags/')
       with:
         name: firmware-release-adafruit-scorpio
         path: |
           firmware/*.zip
 
-    - name: Build packages for Adafruit ItsyBitsy RP2040 (release-only)
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Build packages for Adafruit ItsyBitsy RP2040
       shell: bash
       run: |
         cd build
-        rm *.*
-        rm ../firmware/*
+        rm -rf *
+        rm -rf ../firmware/*
         echo "Neopixel is using GPIO14(OUTPUT_DATA_PIN) on output 5." > ../firmware/Firmwares_for_Adafruit_ItsyBitsy_2040.txt
         cmake -DOVERRIDE_BOOT_WORKAROUND=ON -DOVERRIDE_DATA_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
@@ -79,20 +85,18 @@ jobs:
         zip -j ../firmware/Adafruit_ItsyBitsy_2040.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release Adafruit_ItsyBitsy)
-      if: startsWith(github.ref, 'refs/tags/')
+      name: Upload artifacts (release Adafruit_ItsyBitsy_2040)
       with:
-        name: firmware-release-adafruit-itsybitsy
+        name: firmware-release-adafruit-itsybitsy-2040
         path: |
           firmware/*.zip
 
-    - name: Build packages for Pimoroni Plasma Stick 2040 W (release-only)
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Build packages for Pimoroni Plasma Stick 2040 W
       shell: bash
       run: |
         cd build
-        rm *.*
-        rm ../firmware/*
+        rm -rf *
+        rm -rf ../firmware/*
         echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output PIXELS." > ../firmware/Firmwares_for_Pimoroni_Plasma_Stick_2040_W.txt
         cmake -DOVERRIDE_DATA_PIN=15 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
@@ -100,20 +104,18 @@ jobs:
         zip -j ../firmware/Pimoroni_Plasma_Stick_2040_W.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release Pimoroni_Plasma_Stick_W)
-      if: startsWith(github.ref, 'refs/tags/')
+      name: Upload artifacts (release Pimoroni_Plasma_Stick_2040_W)
       with:
-        name: firmware-release-pimoroni-plasma-stick
+        name: firmware-release-pimoroni-plasma-stick-2040-w
         path: |
           firmware/*.zip
 
-    - name: Build packages for Pimoroni Plasma 2040 (release-only)
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Build packages for Pimoroni Plasma 2040
       shell: bash
       run: |
         cd build
-        rm *.*
-        rm ../firmware/*
+        rm -rf *
+        rm -rf ../firmware/*
         echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output DA." > ../firmware/Firmwares_for_Pimoroni_Plasma_2040.txt
         echo "SPI is using spi1 interface pins: GPIO15(OUTPUT_SPI_DATA_PIN) and GPIO14(OUTPUT_SPI_CLOCK_PIN) on output DA and CL respectively." >> ../firmware/Firmwares_for_Pimoroni_Plasma_2040.txt
         cmake -DOVERRIDE_DATA_PIN=15 -DOVERRIDE_SPI_INTERFACE=spi1 -DOVERRIDE_SPI_DATA_PIN=15 -DOVERRIDE_SPI_CLOCK_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
@@ -121,10 +123,28 @@ jobs:
         zip -j ../firmware/Pimoroni_Plasma_2040.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release Pimoroni_Plasma)
-      if: startsWith(github.ref, 'refs/tags/')
+      name: Upload artifacts (release Pimoroni_Plasma_2040)
       with:
-        name: firmware-release-pimoroni-plasma
+        name: firmware-release-pimoroni-plasma-2040
+        path: |
+          firmware/*.zip
+
+    - name: Build packages for Pimoroni Plasma 2350
+      shell: bash
+      run: |
+        cd build
+        rm -rf *
+        rm -rf ../firmware/*
+        echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output DA." > ../firmware/Firmwares_for_Pimoroni_Plasma_2350.txt
+        echo "SPI is using spi1 interface pins: GPIO15(OUTPUT_SPI_DATA_PIN) and GPIO14(OUTPUT_SPI_CLOCK_PIN) on output DA and CL respectively." >> ../firmware/Firmwares_for_Pimoroni_Plasma_2350.txt
+        cmake -DTARGET_BOARD=pico2 -DOVERRIDE_DATA_PIN=15 -DOVERRIDE_SPI_INTERFACE=spi1 -DOVERRIDE_SPI_DATA_PIN=15 -DOVERRIDE_SPI_CLOCK_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build .
+        zip -j ../firmware/Pimoroni_Plasma_2350.zip ../firmware/*
+
+    - uses: actions/upload-artifact@v7.0.0
+      name: Upload artifacts (release Pimoroni_Plasma_2350)
+      with:
+        name: firmware-release-pimoroni-plasma-rp2350
         path: |
           firmware/*.zip
 
