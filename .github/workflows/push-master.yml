@@ -142,7 +142,7 @@ jobs:
         rm -rf ../firmware/*
         echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output DA." > ../firmware/Pinout_for_Pimoroni_Plasma_RP2350.txt
         echo "SPI is using spi1 interface pins: GPIO15(OUTPUT_SPI_DATA_PIN) and GPIO14(OUTPUT_SPI_CLOCK_PIN) on output DA and CL respectively." >> ../firmware/Pinout_for_Pimoroni_Plasma_RP2350.txt
-        cmake -DTARGET_BOARD=pico2 -DOVERRIDE_DATA_PIN=15 -DOVERRIDE_SPI_INTERFACE=spi1 -DOVERRIDE_SPI_DATA_PIN=15 -DOVERRIDE_SPI_CLOCK_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
+        cmake -DTARGET_BOARD=pimoroni_plasma2350 -DOVERRIDE_DATA_PIN=15 -DOVERRIDE_SPI_INTERFACE=spi1 -DOVERRIDE_SPI_DATA_PIN=15 -DOVERRIDE_SPI_CLOCK_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
         zip -j ../firmware/Pimoroni_Plasma_RP2350.zip ../firmware/*
 

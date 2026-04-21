@@ -142,7 +142,7 @@ class
 			printf(output);
 
 			#if defined(NEOPIXEL_RGBW)
-				calibrationConfig.printCalibration();
+				calibrationConfig.printCalibration(output, sizeof(output));
 			#endif
 
 			if (welcomeMessage.exchange(false))
