@@ -9,7 +9,7 @@ jobs:
 ###########################
 
   HyperSerialPico:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v6.0.2
@@ -19,7 +19,7 @@ jobs:
     - name: Install GNU Arm Embedded Toolchain
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
-        release: '15.2.Rel1'
+        release: '14.2.Rel1'
 
     - name: Build packages
       shell: bash
@@ -32,11 +32,11 @@ jobs:
     - uses: actions/upload-artifact@v7.0.0
       name: Upload artifacts (release)
       with:
-        name: firmware-release-generic-rp2040
+        name: firmware-release-generic-RP2040
         path: |
           firmware/*.uf2
 
-    - name: Build packages for generic rp2350
+    - name: Build packages for generic RP2350
       shell: bash
       run: |
         cd build
@@ -44,12 +44,13 @@ jobs:
         rm -rf ../firmware/*
         cmake -DTARGET_BOARD=pico2 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
-        zip -j ../firmware/firmware_generic_rp2350.zip ../firmware/*
+        zip -j ../firmware/firmware_generic_RP2350.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release generic rp2350)
+      name: Upload artifacts (release generic RP2350)
       with:
-        name: firmware-release-generic-rp2350
+        name: firmware-release-generic-RP2350
+        archive: false
         path: |
           firmware/*.zip
 
@@ -59,16 +60,17 @@ jobs:
         cd build
         rm -rf *
         rm -rf ../firmware/*
-        echo "Neopixel is using GPIO16(OUTPUT_DATA_PIN) on output 0." > ../firmware/Firmwares_for_Adafruit_Feather_RP2040_Scorpio.txt
-        echo "SPI is using spi0 interface pins: GPIO19(OUTPUT_SPI_DATA_PIN) and GPIO18(OUTPUT_SPI_CLOCK_PIN) on output 3 and 2 respectively." >> ../firmware/Firmwares_for_Adafruit_Feather_RP2040_Scorpio.txt
+        echo "Neopixel is using GPIO16(OUTPUT_DATA_PIN) on output 0." > ../firmware/Pinout_for_Adafruit_Feather_RP2040_Scorpio.txt
+        echo "SPI is using spi0 interface pins: GPIO19(OUTPUT_SPI_DATA_PIN) and GPIO18(OUTPUT_SPI_CLOCK_PIN) on output 3 and 2 respectively." >> ../firmware/Pinout_for_Adafruit_Feather_RP2040_Scorpio.txt
         cmake -DOVERRIDE_BOOT_WORKAROUND=ON -DOVERRIDE_DATA_PIN=16 -DOVERRIDE_SPI_DATA_PIN=19 -DOVERRIDE_SPI_CLOCK_PIN=18 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
         zip -j ../firmware/Adafruit_Feather_RP2040_Scorpio.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release Adafruit_Feather)
+      name: Upload artifacts (release for Adafruit_Feather_RP2040)
       with:
-        name: firmware-release-adafruit-scorpio
+        name: firmware-release-adafruit-scorpio-RP2040
+        archive: false
         path: |
           firmware/*.zip
 
@@ -78,35 +80,37 @@ jobs:
         cd build
         rm -rf *
         rm -rf ../firmware/*
-        echo "Neopixel is using GPIO14(OUTPUT_DATA_PIN) on output 5." > ../firmware/Firmwares_for_Adafruit_ItsyBitsy_2040.txt
+        echo "Neopixel is using GPIO14(OUTPUT_DATA_PIN) on output 5." > ../firmware/Pinout_for_Adafruit_ItsyBitsy_RP2040.txt
         cmake -DOVERRIDE_BOOT_WORKAROUND=ON -DOVERRIDE_DATA_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
         rm ../firmware/*_Spi.uf2
-        zip -j ../firmware/Adafruit_ItsyBitsy_2040.zip ../firmware/*
+        zip -j ../firmware/Adafruit_ItsyBitsy_RP2040.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release Adafruit_ItsyBitsy_2040)
+      name: Upload artifacts (release for Adafruit_ItsyBitsy_RP2040)
       with:
-        name: firmware-release-adafruit-itsybitsy-2040
+        name: firmware-release-adafruit-itsybitsy-RP2040
+        archive: false
         path: |
           firmware/*.zip
 
-    - name: Build packages for Pimoroni Plasma Stick 2040 W
+    - name: Build packages for Pimoroni Plasma Stick RP2040 W
       shell: bash
       run: |
         cd build
         rm -rf *
         rm -rf ../firmware/*
-        echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output PIXELS." > ../firmware/Firmwares_for_Pimoroni_Plasma_Stick_2040_W.txt
+        echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output PIXELS." > ../firmware/Pinout_for_Pimoroni_Plasma_Stick_RP2040_W.txt
         cmake -DOVERRIDE_DATA_PIN=15 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
         rm ../firmware/*_Spi.uf2
-        zip -j ../firmware/Pimoroni_Plasma_Stick_2040_W.zip ../firmware/*
+        zip -j ../firmware/Pimoroni_Plasma_Stick_RP2040_W.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release Pimoroni_Plasma_Stick_2040_W)
+      name: Upload artifacts (release for Pimoroni_Plasma_Stick_RP2040_W)
       with:
-        name: firmware-release-pimoroni-plasma-stick-2040-w
+        name: firmware-release-pimoroni-plasma-stick-RP2040-W
+        archive: false
         path: |
           firmware/*.zip
 
@@ -116,35 +120,37 @@ jobs:
         cd build
         rm -rf *
         rm -rf ../firmware/*
-        echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output DA." > ../firmware/Firmwares_for_Pimoroni_Plasma_2040.txt
-        echo "SPI is using spi1 interface pins: GPIO15(OUTPUT_SPI_DATA_PIN) and GPIO14(OUTPUT_SPI_CLOCK_PIN) on output DA and CL respectively." >> ../firmware/Firmwares_for_Pimoroni_Plasma_2040.txt
+        echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output DA." > ../firmware/Pinout_for_Pimoroni_Plasma_RP2040.txt
+        echo "SPI is using spi1 interface pins: GPIO15(OUTPUT_SPI_DATA_PIN) and GPIO14(OUTPUT_SPI_CLOCK_PIN) on output DA and CL respectively." >> ../firmware/Pinout_for_Pimoroni_Plasma_RP2040.txt
         cmake -DOVERRIDE_DATA_PIN=15 -DOVERRIDE_SPI_INTERFACE=spi1 -DOVERRIDE_SPI_DATA_PIN=15 -DOVERRIDE_SPI_CLOCK_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
-        zip -j ../firmware/Pimoroni_Plasma_2040.zip ../firmware/*
+        zip -j ../firmware/Pimoroni_Plasma_RP2040.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release Pimoroni_Plasma_2040)
+      name: Upload artifacts (release for Pimoroni_Plasma_RP2040)
       with:
-        name: firmware-release-pimoroni-plasma-2040
+        name: firmware-release-pimoroni-plasma-RP2040
+        archive: false
         path: |
           firmware/*.zip
 
-    - name: Build packages for Pimoroni Plasma 2350
+    - name: Build packages for Pimoroni Plasma RP2350
       shell: bash
       run: |
         cd build
         rm -rf *
         rm -rf ../firmware/*
-        echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output DA." > ../firmware/Firmwares_for_Pimoroni_Plasma_2350.txt
-        echo "SPI is using spi1 interface pins: GPIO15(OUTPUT_SPI_DATA_PIN) and GPIO14(OUTPUT_SPI_CLOCK_PIN) on output DA and CL respectively." >> ../firmware/Firmwares_for_Pimoroni_Plasma_2350.txt
+        echo "Neopixel is using GPIO15(OUTPUT_DATA_PIN) on output DA." > ../firmware/Pinout_for_Pimoroni_Plasma_RP2350.txt
+        echo "SPI is using spi1 interface pins: GPIO15(OUTPUT_SPI_DATA_PIN) and GPIO14(OUTPUT_SPI_CLOCK_PIN) on output DA and CL respectively." >> ../firmware/Pinout_for_Pimoroni_Plasma_RP2350.txt
         cmake -DTARGET_BOARD=pico2 -DOVERRIDE_DATA_PIN=15 -DOVERRIDE_SPI_INTERFACE=spi1 -DOVERRIDE_SPI_DATA_PIN=15 -DOVERRIDE_SPI_CLOCK_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
-        zip -j ../firmware/Pimoroni_Plasma_2350.zip ../firmware/*
+        zip -j ../firmware/Pimoroni_Plasma_RP2350.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
-      name: Upload artifacts (release Pimoroni_Plasma_2350)
+      name: Upload artifacts (release for Pimoroni_Plasma_RP2350)
       with:
-        name: firmware-release-pimoroni-plasma-rp2350
+        name: firmware-release-pimoroni-plasma-RP2350
+        archive: false
         path: |
           firmware/*.zip
 
@@ -156,7 +162,7 @@ jobs:
     name: Publish Releases
     if: startsWith(github.event.ref, 'refs/tags')
     needs: [HyperSerialPico]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:

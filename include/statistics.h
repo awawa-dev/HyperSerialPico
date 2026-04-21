@@ -28,6 +28,8 @@
 #ifndef STATISTICS_H
 #define STATISTICS_H
 
+#include <atomic>
+
 // statistics (stats sent only when there is no communication)
 class
 {
@@ -38,8 +40,11 @@ class
 	uint16_t finalGoodFrames = 0;
 	uint16_t finalShowFrames = 0;
 	uint16_t finalTotalFrames = 0;
+	std::atomic<bool> welcomeMessage = false;
 
 	public:
+		std::atomic<bool> printLogs = false;		
+
 		/**
 		 * @brief Get the start time of the current period
 		 *
@@ -113,14 +118,21 @@ class
 		 * @param curTime
 		 * @param taskHandle
 		 */
-		void print(unsigned long curTime, TaskHandle_t taskHandle1, TaskHandle_t taskHandle2)
+		void print(unsigned long curTime, semaphore_t* receiverSemaphore, bool isWelcome)
 		{
-			char output[128];
-
 			startTime = curTime;
 			goodFrames = 0;
 			totalFrames = 0;
 			showFrames = 0;
+
+			welcomeMessage.store(isWelcome);
+			printLogs.store(true);
+			sem_release(receiverSemaphore);
+		}
+
+		void printToSerial(TaskHandle_t taskHandle1, TaskHandle_t taskHandle2)
+		{
+			char output[128];
 
 			snprintf(output, sizeof(output), "HyperHDR frames: %u (FPS), receiv.: %u, good: %u, incompl.: %u, mem1: %i, mem2: %i, heap: %zu\r\n",
 						finalShowFrames, finalTotalFrames,finalGoodFrames,(finalTotalFrames - finalGoodFrames),
@@ -132,6 +144,11 @@ class
 			#if defined(NEOPIXEL_RGBW)
 				calibrationConfig.printCalibration();
 			#endif
+
+			if (welcomeMessage.exchange(false))
+			{
+				printf(HELLO_MESSAGE);
+			}
 		}
 
 		/**

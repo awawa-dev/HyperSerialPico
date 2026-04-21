@@ -153,6 +153,11 @@ static void core0( void *pvParameters )
                 }
             }while(wanted == received);
 
+            if (statistics.printLogs.exchange(false))
+            {
+                statistics.printToSerial(base.processDataHandle, base.processSerialHandle);
+            }
+
             sem_release(&base.serialSemaphore);
         }
     }
