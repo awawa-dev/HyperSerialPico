@@ -30,6 +30,9 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "pico/multicore.h"
+#include "hardware/irq.h"
+#include "semphr.h"
 #include <stdio.h>
 #include <algorithm>
 #include "pico/stdio/driver.h"
@@ -140,7 +143,7 @@ static void core0( void *pvParameters )
 {
     for( ;; )
     {
-        if (sem_acquire_timeout_us(&base.receiverSemaphore, portMAX_DELAY))
+        if (xSemaphoreTake(base.receiverSemaphore, portMAX_DELAY) == pdTRUE)
         {
             int wanted, received;
             do
@@ -156,6 +159,8 @@ static void core0( void *pvParameters )
             if (statistics.printLogs.exchange(false))
             {
                 statistics.printToSerial(base.processDataHandle, base.processSerialHandle);
+                stdio_flush();
+                vTaskDelay(pdMS_TO_TICKS(2));
             }
 
             sem_release(&base.serialSemaphore);
@@ -165,7 +170,16 @@ static void core0( void *pvParameters )
 
 static void serialEvent(void *)
 {
-    sem_release(&base.receiverSemaphore);
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(base.receiverSemaphore, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+void on_fifo_irq()
+{
+    multicore_fifo_drain();
+    
+    serialEvent(nullptr);
 }
 
 int main(void)
@@ -174,7 +188,11 @@ int main(void)
 
     sem_init(&base.serialSemaphore, 0, 1);
 
-    sem_init(&base.receiverSemaphore, 0, 1);
+    base.receiverSemaphore = xSemaphoreCreateBinary();
+
+    multicore_fifo_clear_irq(); 
+    irq_set_exclusive_handler(SIO_IRQ_FIFO, on_fifo_irq);
+    irq_set_enabled(SIO_IRQ_FIFO, true);
 
     multicore_launch_core1(core1);
 

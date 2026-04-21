@@ -151,7 +151,7 @@ void processData()
 			}
 			else if (frameState.getCount() ==  0x2aa2 && (input == 0x15 || input == 0x35))
 			{
-				statistics.print(currentTime, &base.receiverSemaphore, input == 0x15);
+				statistics.print(currentTime, input == 0x15);
 
 				frameState.setRegroup(true);
 

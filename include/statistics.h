@@ -118,7 +118,7 @@ class
 		 * @param curTime
 		 * @param taskHandle
 		 */
-		void print(unsigned long curTime, semaphore_t* receiverSemaphore, bool isWelcome)
+		void print(unsigned long curTime, bool isWelcome)
 		{
 			startTime = curTime;
 			goodFrames = 0;
@@ -127,7 +127,7 @@ class
 
 			welcomeMessage.store(isWelcome);
 			printLogs.store(true);
-			sem_release(receiverSemaphore);
+			multicore_fifo_push_blocking(0xFF);
 		}
 
 		void printToSerial(TaskHandle_t taskHandle1, TaskHandle_t taskHandle2)
@@ -139,15 +139,15 @@ class
 						(taskHandle1 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandle1) : 0,
 						(taskHandle2 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandle2) : 0,
 						xPortGetFreeHeapSize());
-			printf(output);
+			fputs(output, stdout);
 
 			#if defined(NEOPIXEL_RGBW)
-				calibrationConfig.printCalibration(output, sizeof(output));
+				calibrationConfig.printCalibration(output);
 			#endif
 
 			if (welcomeMessage.exchange(false))
 			{
-				printf(HELLO_MESSAGE);
+				fputs(HELLO_MESSAGE, stdout);
 			}
 		}
 
