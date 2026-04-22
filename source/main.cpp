@@ -126,6 +126,10 @@
 #define yield() busy_wait_us(100)
 #define millis xTaskGetTickCount
 
+#if !defined(SIO_IRQ_FIFO) && defined(PICO_RP2040)
+    #define SIO_IRQ_FIFO SIO_IRQ_PROC0
+#endif
+
 #include "main.h"
 
 static void core1()
@@ -160,7 +164,7 @@ static void core0( void *pvParameters )
             {
                 statistics.printToSerial(base.processDataHandle, base.processSerialHandle);
                 stdio_flush();
-                vTaskDelay(pdMS_TO_TICKS(2));
+                vTaskDelay(pdMS_TO_TICKS(5));
             }
 
             sem_release(&base.serialSemaphore);

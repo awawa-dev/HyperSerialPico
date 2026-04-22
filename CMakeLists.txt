@@ -128,6 +128,13 @@ macro(HyperSerialPicoTarget HyperSerialPicoTargetName)
     if (BOOT_WORKAROUND)
         target_compile_definitions(${HyperSerialPicoTargetName} PUBLIC -DBOOT_WORKAROUND -DPICO_XOSC_STARTUP_DELAY_MULTIPLIER=64)
     endif()
+    
+    target_compile_definitions(${HyperSerialPicoTargetName} PRIVATE
+        CFG_TUD_CDC_RX_BUFSIZE=8192
+        CFG_TUD_CDC_EP_BUFSIZE=2048
+        CFG_TUD_CDC_TX_BUFSIZE=512
+    )
+
     target_include_directories(${HyperSerialPicoTargetName} PRIVATE ${HyperSerialPicoCompanionIncludes})
     target_link_libraries(${HyperSerialPicoTargetName} ${HyperSerialPicoCompanionLibs})
     pico_add_extra_outputs(${HyperSerialPicoTargetName})
