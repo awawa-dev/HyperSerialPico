@@ -163,8 +163,6 @@ static void core0( void *pvParameters )
             if (statistics.printLogs.exchange(false))
             {
                 statistics.printToSerial(base.processDataHandle, base.processSerialHandle);
-                stdio_flush();
-                vTaskDelay(pdMS_TO_TICKS(5));
             }
 
             sem_release(&base.serialSemaphore);
@@ -181,7 +179,9 @@ static void serialEvent(void *)
 
 void on_fifo_irq()
 {
-    multicore_fifo_drain();
+    while (multicore_fifo_rvalid()) {
+        multicore_fifo_pop_blocking();
+    }
     
     serialEvent(nullptr);
 }
