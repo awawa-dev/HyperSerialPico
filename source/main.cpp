@@ -30,6 +30,10 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "tusb.h"
+#include "pico/multicore.h"
+#include "hardware/irq.h"
+#include "semphr.h"
 #include <stdio.h>
 #include <algorithm>
 #include "pico/stdio/driver.h"
@@ -123,16 +127,18 @@
 #define yield() busy_wait_us(100)
 #define millis xTaskGetTickCount
 
+#if !defined(SIO_IRQ_FIFO) && defined(PICO_RP2040)
+    #define SIO_IRQ_FIFO SIO_IRQ_PROC0
+#endif
+
 #include "main.h"
 
 static void core1()
 {
     for( ;; )
     {
-        if (sem_acquire_timeout_us(&base.serialSemaphore, portMAX_DELAY))
-        {
-            processData();
-        }
+        [[maybe_unused]] auto val = multicore_fifo_pop_blocking();
+        processData();
     }
 }
 
@@ -140,36 +146,67 @@ static void core0( void *pvParameters )
 {
     for( ;; )
     {
-        if (sem_acquire_timeout_us(&base.receiverSemaphore, portMAX_DELAY))
+        if (xSemaphoreTake(base.receiverSemaphore, portMAX_DELAY) == pdTRUE)
         {
             int wanted, received;
             do
             {
                 wanted = std::min(MAX_BUFFER - base.queueEnd, MAX_BUFFER - 1);
-                received = stdio_usb.in_chars((char*)(&(base.buffer[base.queueEnd])), wanted);
+
+                if (stdio_usb_connected() && tud_cdc_available()) {
+                    received = (int)tud_cdc_read(const_cast<uint8_t*>(&(base.buffer[base.queueEnd])), (uint32_t)wanted);
+                }
+
                 if (received > 0)
                 {
                     base.queueEnd = (base.queueEnd + received) % (MAX_BUFFER);
                 }
             }while(wanted == received);
 
-            sem_release(&base.serialSemaphore);
+            if (statistics.printLogs.exchange(false))
+            {
+                statistics.printToSerial(base.processSerialHandle);
+                tud_cdc_write_flush();
+                vTaskDelay(pdMS_TO_TICKS(5));
+            }
+
+            multicore_fifo_push_blocking(0xAA);
         }
     }
 }
 
 static void serialEvent(void *)
 {
-    sem_release(&base.receiverSemaphore);
+    if (xPortIsInsideInterrupt())
+    {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(base.receiverSemaphore, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+    else
+    {
+        xSemaphoreGive(base.receiverSemaphore);
+    }
+}
+
+void on_fifo_irq()
+{
+    while (multicore_fifo_rvalid()) {
+        multicore_fifo_pop_blocking();
+    }
+    
+    serialEvent(nullptr);
 }
 
 int main(void)
 {
     stdio_init_all();
 
-    sem_init(&base.serialSemaphore, 0, 1);
+    base.receiverSemaphore = xSemaphoreCreateBinary();
 
-    sem_init(&base.receiverSemaphore, 0, 1);
+    multicore_fifo_clear_irq(); 
+    irq_set_exclusive_handler(SIO_IRQ_FIFO, on_fifo_irq);
+    irq_set_enabled(SIO_IRQ_FIFO, true);
 
     multicore_launch_core1(core1);
 

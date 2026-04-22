@@ -28,6 +28,8 @@
 #ifndef STATISTICS_H
 #define STATISTICS_H
 
+#include <atomic>
+
 // statistics (stats sent only when there is no communication)
 class
 {
@@ -38,8 +40,11 @@ class
 	uint16_t finalGoodFrames = 0;
 	uint16_t finalShowFrames = 0;
 	uint16_t finalTotalFrames = 0;
+	std::atomic<bool> welcomeMessage = false;
 
 	public:
+		std::atomic<bool> printLogs = false;		
+
 		/**
 		 * @brief Get the start time of the current period
 		 *
@@ -113,25 +118,36 @@ class
 		 * @param curTime
 		 * @param taskHandle
 		 */
-		void print(unsigned long curTime, TaskHandle_t taskHandle1, TaskHandle_t taskHandle2)
+		void print(unsigned long curTime, bool isWelcome)
 		{
-			char output[128];
-
 			startTime = curTime;
 			goodFrames = 0;
 			totalFrames = 0;
 			showFrames = 0;
 
-			snprintf(output, sizeof(output), "HyperHDR frames: %u (FPS), receiv.: %u, good: %u, incompl.: %u, mem1: %i, mem2: %i, heap: %zu\r\n",
+			welcomeMessage.store(isWelcome);
+			printLogs.store(true);
+			multicore_fifo_push_blocking(0xFF);
+		}
+
+		void printToSerial(TaskHandle_t taskHandleCore0)
+		{
+			char output[128];
+
+			snprintf(output, sizeof(output), "HyperHDR frames: %u (FPS), receiv.: %u, good: %u, incompl.: %u, core0: %i, heap: %zu\r\n",
 						finalShowFrames, finalTotalFrames,finalGoodFrames,(finalTotalFrames - finalGoodFrames),
-						(taskHandle1 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandle1) : 0,
-						(taskHandle2 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandle2) : 0,
+						(taskHandleCore0 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandleCore0) : 0,
 						xPortGetFreeHeapSize());
-			printf(output);
+			tud_cdc_write_str(output);
 
 			#if defined(NEOPIXEL_RGBW)
-				calibrationConfig.printCalibration();
+				calibrationConfig.printCalibration(output);
 			#endif
+
+			if (welcomeMessage.exchange(false))
+			{
+				tud_cdc_write_str(HELLO_MESSAGE);
+			}
 		}
 
 		/**
