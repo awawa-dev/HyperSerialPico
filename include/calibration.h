@@ -129,7 +129,7 @@ class CalibrationConfig
 		void printCalibration(char (&output)[N])
 		{
 			snprintf(output, N, "RGBW => Gain: %i/255, red: %i, green: %i, blue: %i\r\n", gain, red, green, blue);
-			fputs(output, stdout);
+			tud_cdc_write_str(output);
 		}
 } calibrationConfig;
 

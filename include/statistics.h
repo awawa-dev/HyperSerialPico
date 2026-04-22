@@ -130,16 +130,15 @@ class
 			multicore_fifo_push_blocking(0xFF);
 		}
 
-		void printToSerial(TaskHandle_t taskHandle1, TaskHandle_t taskHandle2)
+		void printToSerial(TaskHandle_t taskHandleCore0)
 		{
 			char output[128];
 
-			snprintf(output, sizeof(output), "HyperHDR frames: %u (FPS), receiv.: %u, good: %u, incompl.: %u, mem1: %i, mem2: %i, heap: %zu\r\n",
+			snprintf(output, sizeof(output), "HyperHDR frames: %u (FPS), receiv.: %u, good: %u, incompl.: %u, core0: %i, heap: %zu\r\n",
 						finalShowFrames, finalTotalFrames,finalGoodFrames,(finalTotalFrames - finalGoodFrames),
-						(taskHandle1 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandle1) : 0,
-						(taskHandle2 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandle2) : 0,
+						(taskHandleCore0 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandleCore0) : 0,
 						xPortGetFreeHeapSize());
-			fputs(output, stdout);
+			tud_cdc_write_str(output);
 
 			#if defined(NEOPIXEL_RGBW)
 				calibrationConfig.printCalibration(output);
@@ -147,7 +146,7 @@ class
 
 			if (welcomeMessage.exchange(false))
 			{
-				fputs(HELLO_MESSAGE, stdout);
+				tud_cdc_write_str(HELLO_MESSAGE);
 			}
 		}
 

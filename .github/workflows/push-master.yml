@@ -84,6 +84,7 @@ jobs:
         cmake -DOVERRIDE_BOOT_WORKAROUND=ON -DOVERRIDE_DATA_PIN=14 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
         rm ../firmware/*_Spi.uf2
+        rm ../firmware/*_ws2801.uf2
         zip -j ../firmware/Adafruit_ItsyBitsy_RP2040.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0
@@ -104,6 +105,7 @@ jobs:
         cmake -DOVERRIDE_DATA_PIN=15 -DCMAKE_BUILD_TYPE=Release ..
         cmake --build .
         rm ../firmware/*_Spi.uf2
+        rm ../firmware/*_ws2801.uf2
         zip -j ../firmware/Pimoroni_Plasma_Stick_RP2040_W.zip ../firmware/*
 
     - uses: actions/upload-artifact@v7.0.0

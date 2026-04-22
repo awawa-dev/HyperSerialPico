@@ -73,7 +73,6 @@ void processData()
 		if (base.queueCurrent >= MAX_BUFFER)
 		{
 			base.queueCurrent = 0;
-			yield();
 		}
 
 		switch (frameState.getState())
@@ -294,8 +293,6 @@ void processData()
 				currentTime = millis();
 				deltaTime = currentTime - statistics.getStartTime();
 				updateMainStatistics(currentTime, deltaTime, true);
-
-				yield();
 			}
 
 			frameState.setState(AwaProtocol::HEADER_A);

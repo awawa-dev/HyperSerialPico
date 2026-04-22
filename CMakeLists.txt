@@ -68,7 +68,7 @@ pico_sdk_init()
 
 # generic HyperSerialPico settings
 set(HyperSerialPicoCompanionIncludes ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/sdk/config)
-set(HyperSerialPicoCompanionLibs FreeRTOS-Kernel freertos_config FreeRTOS-Kernel-Heap4 pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi)
+set(HyperSerialPicoCompanionLibs FreeRTOS-Kernel freertos_config FreeRTOS-Kernel-Heap1 pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/firmware)
 

@@ -30,6 +30,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "tusb.h"
 #include "pico/multicore.h"
 #include "hardware/irq.h"
 #include "semphr.h"
@@ -136,10 +137,8 @@ static void core1()
 {
     for( ;; )
     {
-        if (sem_acquire_timeout_us(&base.serialSemaphore, portMAX_DELAY))
-        {
-            processData();
-        }
+        [[maybe_unused]] auto val = multicore_fifo_pop_blocking();
+        processData();
     }
 }
 
@@ -153,7 +152,11 @@ static void core0( void *pvParameters )
             do
             {
                 wanted = std::min(MAX_BUFFER - base.queueEnd, MAX_BUFFER - 1);
-                received = stdio_usb.in_chars((char*)(&(base.buffer[base.queueEnd])), wanted);
+
+                if (stdio_usb_connected() && tud_cdc_available()) {
+                    received = (int)tud_cdc_read(const_cast<uint8_t*>(&(base.buffer[base.queueEnd])), (uint32_t)wanted);
+                }
+
                 if (received > 0)
                 {
                     base.queueEnd = (base.queueEnd + received) % (MAX_BUFFER);
@@ -162,19 +165,28 @@ static void core0( void *pvParameters )
 
             if (statistics.printLogs.exchange(false))
             {
-                statistics.printToSerial(base.processDataHandle, base.processSerialHandle);
+                statistics.printToSerial(base.processSerialHandle);
+                tud_cdc_write_flush();
+                vTaskDelay(pdMS_TO_TICKS(5));
             }
 
-            sem_release(&base.serialSemaphore);
+            multicore_fifo_push_blocking(0xAA);
         }
     }
 }
 
 static void serialEvent(void *)
 {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xSemaphoreGiveFromISR(base.receiverSemaphore, &xHigherPriorityTaskWoken);
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    if (xPortIsInsideInterrupt())
+    {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(base.receiverSemaphore, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+    else
+    {
+        xSemaphoreGive(base.receiverSemaphore);
+    }
 }
 
 void on_fifo_irq()
@@ -189,8 +201,6 @@ void on_fifo_irq()
 int main(void)
 {
     stdio_init_all();
-
-    sem_init(&base.serialSemaphore, 0, 1);
 
     base.receiverSemaphore = xSemaphoreCreateBinary();
 
