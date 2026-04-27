@@ -154,10 +154,16 @@ void processData()
 
 				frameState.setRegroup(true);
 
-				delay(10);
-
 				currentTime = millis();
-				statistics.reset(currentTime);
+				if (input == 0x15)
+				{					
+					statistics.reset(currentTime);
+				}
+				else
+				{
+					statistics.lightReset(currentTime, true);
+				}
+
 				frameState.setState(AwaProtocol::HEADER_A);
 			}
 			else

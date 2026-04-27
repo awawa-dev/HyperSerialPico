@@ -67,8 +67,8 @@ ENDIF(CMAKE_COMPILER_IS_GNUCC)
 pico_sdk_init()
 
 # generic HyperSerialPico settings
-set(HyperSerialPicoCompanionIncludes ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/sdk/config)
-set(HyperSerialPicoCompanionLibs FreeRTOS-Kernel freertos_config FreeRTOS-Kernel-Heap1 pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi)
+set(HyperSerialPicoCompanionIncludes ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/sdk/config ${PICO_SDK_PATH}/src/rp2_common/pico_stdio_usb/include ${PICO_SDK_PATH}/src/common/pico_usb_reset_interface_headers/include)
+set(HyperSerialPicoCompanionLibs FreeRTOS-Kernel freertos_config FreeRTOS-Kernel-Heap1 tinyusb_board tinyusb_device pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/firmware)
 
@@ -128,17 +128,14 @@ macro(HyperSerialPicoTarget HyperSerialPicoTargetName)
     if (BOOT_WORKAROUND)
         target_compile_definitions(${HyperSerialPicoTargetName} PUBLIC -DBOOT_WORKAROUND -DPICO_XOSC_STARTUP_DELAY_MULTIPLIER=64)
     endif()
-    
-    target_compile_definitions(${HyperSerialPicoTargetName} PRIVATE
-        CFG_TUD_CDC_RX_BUFSIZE=8192
-        CFG_TUD_CDC_EP_BUFSIZE=2048
-        CFG_TUD_CDC_TX_BUFSIZE=512
-    )
+
+    target_compile_definitions(${HyperSerialPicoTargetName} PRIVATE -DPICO_STDIO_USB_USE_DEFAULT_DESCRIPTORS=1)
+    target_sources(${HyperSerialPicoTargetName} PRIVATE ${PICO_SDK_PATH}/src/rp2_common/pico_stdio_usb/stdio_usb_descriptors.c)
 
     target_include_directories(${HyperSerialPicoTargetName} PRIVATE ${HyperSerialPicoCompanionIncludes})
     target_link_libraries(${HyperSerialPicoTargetName} ${HyperSerialPicoCompanionLibs})
     pico_add_extra_outputs(${HyperSerialPicoTargetName})
-    pico_enable_stdio_usb(${HyperSerialPicoTargetName} 1)
+    pico_enable_stdio_usb(${HyperSerialPicoTargetName} 0)
     pico_enable_stdio_uart(${HyperSerialPicoTargetName} 0)
     pico_generate_pio_header(${HyperSerialPicoTargetName} ${CMAKE_CURRENT_SOURCE_DIR}/pio/neopixel.pio OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
     pico_generate_pio_header(${HyperSerialPicoTargetName} ${CMAKE_CURRENT_SOURCE_DIR}/pio/neopixel_ws2812b.pio OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)

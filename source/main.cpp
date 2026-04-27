@@ -25,11 +25,9 @@
 *  SOFTWARE.
  */
 
-#define TUD_OPT_HIGH_SPEED
-
-
 #include "FreeRTOS.h"
 #include "task.h"
+#include "tusb_config.h"
 #include "tusb.h"
 #include "pico/multicore.h"
 #include "hardware/irq.h"
@@ -39,7 +37,6 @@
 #include "pico/stdio/driver.h"
 #include "pico/stdlib.h"
 #include "pico/stdio.h"
-#include "pico/stdio_usb.h"
 #include "pico/multicore.h"
 #include "pico/sem.h"
 #include "leds.h"
@@ -127,10 +124,6 @@
 #define yield() busy_wait_us(100)
 #define millis xTaskGetTickCount
 
-#if !defined(SIO_IRQ_FIFO) && defined(PICO_RP2040)
-    #define SIO_IRQ_FIFO SIO_IRQ_PROC0
-#endif
-
 #include "main.h"
 
 static void core1()
@@ -142,75 +135,43 @@ static void core1()
     }
 }
 
-static void core0( void *pvParameters )
-{
-    for( ;; )
-    {
-        if (xSemaphoreTake(base.receiverSemaphore, portMAX_DELAY) == pdTRUE)
+void core0(void *pvParameters) {
+    tusb_init(); 
+    while (1) {
+        tud_task();
+        if (tud_cdc_connected())
         {
-            int wanted, received;
-            do
-            {
-                wanted = std::min(MAX_BUFFER - base.queueEnd, MAX_BUFFER - 1);
-
-                if (stdio_usb_connected() && tud_cdc_available()) {
-                    received = (int)tud_cdc_read(const_cast<uint8_t*>(&(base.buffer[base.queueEnd])), (uint32_t)wanted);
-                }
-
-                if (received > 0)
+            // receive
+            if (tud_cdc_available()) {
+                int wanted, received;
+                do
                 {
-                    base.queueEnd = (base.queueEnd + received) % (MAX_BUFFER);
-                }
-            }while(wanted == received);
+                    wanted = std::min(MAX_BUFFER - base.queueEnd, MAX_BUFFER - 1);
 
-            if (statistics.printLogs.exchange(false))
-            {
+                    if (tud_cdc_connected() && tud_cdc_available()) {
+                        received = (int)tud_cdc_read(const_cast<uint8_t*>(&(base.buffer[base.queueEnd])), (uint32_t)wanted);
+                    }
+
+                    if (received > 0)
+                    {
+                        base.queueEnd = (base.queueEnd + received) % (MAX_BUFFER);
+                    }
+                }while(wanted == received);            
+
+                multicore_fifo_push_blocking(0xAA);
+            }
+            // send
+            else if (statistics.printLogs.exchange(false)) {
                 statistics.printToSerial(base.processSerialHandle);
                 tud_cdc_write_flush();
-                vTaskDelay(pdMS_TO_TICKS(5));
             }
-
-            multicore_fifo_push_blocking(0xAA);
-        }
+        } 
     }
-}
-
-static void serialEvent(void *)
-{
-    if (xPortIsInsideInterrupt())
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(base.receiverSemaphore, &xHigherPriorityTaskWoken);
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    }
-    else
-    {
-        xSemaphoreGive(base.receiverSemaphore);
-    }
-}
-
-void on_fifo_irq()
-{
-    while (multicore_fifo_rvalid()) {
-        multicore_fifo_pop_blocking();
-    }
-    
-    serialEvent(nullptr);
 }
 
 int main(void)
 {
-    stdio_init_all();
-
-    base.receiverSemaphore = xSemaphoreCreateBinary();
-
-    multicore_fifo_clear_irq(); 
-    irq_set_exclusive_handler(SIO_IRQ_FIFO, on_fifo_irq);
-    irq_set_enabled(SIO_IRQ_FIFO, true);
-
     multicore_launch_core1(core1);
-
-    stdio_set_chars_available_callback(serialEvent, nullptr);
 
     xTaskCreate(core0,
             "HyperSerialPico:core0",
