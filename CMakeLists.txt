@@ -33,12 +33,26 @@ add_definitions ( -DPICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE=0 )
 # initialize the SDK based on PICO_SDK_PATH
 # note: this must happen before project()
 set(PICO_SDK_PATH ${CMAKE_CURRENT_SOURCE_DIR}/sdk/pico)
-set(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/sdk/freertos)
+# FreeRTOS config
+add_library(freertos_config INTERFACE)
+target_include_directories(freertos_config INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/sdk/config )
+set(FREERTOS_KERNEL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/sdk/freertos")
+
+# Target: 'pico' (RP2040) or 'pico2' (RP2350)
+set(TARGET_BOARD "pico" CACHE STRING "Target board: pico or pico2")
+set(PICO_BOARD ${TARGET_BOARD})
 
 include(${PICO_SDK_PATH}/external/pico_sdk_import.cmake)
+
+if (PICO_RP2350)
+    set(FREERTOS_PORT "GCC_ARM_CM33_NTZ" CACHE STRING "")
+else()
+    set(FREERTOS_PORT "GCC_ARM_CM0" CACHE STRING "")    
+endif()
+
 include(${FREERTOS_KERNEL_PATH}/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
 
-project(HyperSerialPico  C CXX ASM)
+project("HyperSerialPico_${PICO_CHIP}"  C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -53,8 +67,8 @@ ENDIF(CMAKE_COMPILER_IS_GNUCC)
 pico_sdk_init()
 
 # generic HyperSerialPico settings
-set(HyperSerialPicoCompanionLibs FreeRTOS-Kernel FreeRTOS-Kernel-Heap1 pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi)
-set(HyperSerialPicoCompanionIncludes ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/sdk/config)
+set(HyperSerialPicoCompanionIncludes ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/sdk/config ${PICO_SDK_PATH}/src/rp2_common/pico_stdio_usb/include ${PICO_SDK_PATH}/src/common/pico_usb_reset_interface_headers/include)
+set(HyperSerialPicoCompanionLibs FreeRTOS-Kernel freertos_config FreeRTOS-Kernel-Heap1 tinyusb_board tinyusb_device pico_stdlib pico_multicore hardware_pio hardware_dma hardware_spi)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/firmware)
 
@@ -114,10 +128,14 @@ macro(HyperSerialPicoTarget HyperSerialPicoTargetName)
     if (BOOT_WORKAROUND)
         target_compile_definitions(${HyperSerialPicoTargetName} PUBLIC -DBOOT_WORKAROUND -DPICO_XOSC_STARTUP_DELAY_MULTIPLIER=64)
     endif()
+
+    target_compile_definitions(${HyperSerialPicoTargetName} PRIVATE -DPICO_STDIO_USB_USE_DEFAULT_DESCRIPTORS=1)
+    target_sources(${HyperSerialPicoTargetName} PRIVATE ${PICO_SDK_PATH}/src/rp2_common/pico_stdio_usb/stdio_usb_descriptors.c)
+
     target_include_directories(${HyperSerialPicoTargetName} PRIVATE ${HyperSerialPicoCompanionIncludes})
     target_link_libraries(${HyperSerialPicoTargetName} ${HyperSerialPicoCompanionLibs})
     pico_add_extra_outputs(${HyperSerialPicoTargetName})
-    pico_enable_stdio_usb(${HyperSerialPicoTargetName} 1)
+    pico_enable_stdio_usb(${HyperSerialPicoTargetName} 0)
     pico_enable_stdio_uart(${HyperSerialPicoTargetName} 0)
     pico_generate_pio_header(${HyperSerialPicoTargetName} ${CMAKE_CURRENT_SOURCE_DIR}/pio/neopixel.pio OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
     pico_generate_pio_header(${HyperSerialPicoTargetName} ${CMAKE_CURRENT_SOURCE_DIR}/pio/neopixel_ws2812b.pio OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
