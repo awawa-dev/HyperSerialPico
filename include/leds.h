@@ -77,7 +77,7 @@
 #include <algorithm>
 #include <string.h>
 
-struct ColorGrb32
+struct __attribute__((packed)) ColorGrb32
 {
 	uint8_t notUsed;
 	uint8_t B;
@@ -99,7 +99,7 @@ struct ColorGrb32
 	};
 };
 
-struct ColorGrb
+struct __attribute__((packed)) ColorGrb
 {
 	uint8_t B;
 	uint8_t R;
@@ -116,7 +116,7 @@ struct ColorGrb
 	};
 };
 
-struct ColorGrbw
+struct __attribute__((packed)) ColorGrbw
 {
 	uint8_t W;
 	uint8_t B;
@@ -138,7 +138,7 @@ struct ColorGrbw
 	};
 };
 
-struct ColorDotstartBgr
+struct __attribute__((packed)) ColorDotstartBgr
 {
 	uint8_t Brightness;
 	uint8_t B;
@@ -155,7 +155,7 @@ struct ColorDotstartBgr
 	};
 };
 
-struct ColorRgb
+struct __attribute__((packed)) ColorRgb
 {
 	uint8_t R;
 	uint8_t G;
@@ -202,7 +202,7 @@ class LedDriver
 		dma = reinterpret_cast<uint8_t*>(calloc(dmaSize, 1));
 	}
 
-	~LedDriver()
+	virtual ~LedDriver()
 	{
 		free(buffer);
 		free(dma);
@@ -234,22 +234,27 @@ class DmaClient
 		lastRenderTime = 0;
 	};
 
-	~DmaClient()
+	virtual ~DmaClient()
 	{
-		for(int i = 0; i < 10 && isDmaBusy; i++)
+		for(int i = 0; i < 100 && isDmaBusy; i++)
 			busy_wait_us(500);
 
 		dma_channel_abort(PICO_DMA_CHANNEL);
 		dma_channel_set_irq0_enabled(PICO_DMA_CHANNEL, false);
-		irq_set_enabled(DMA_IRQ_0, false);
+		irq_remove_handler(DMA_IRQ_0, dmaFinishReceiver);
 
 		dma_channel_unclaim(PICO_DMA_CHANNEL);
 	};
 
-	void dmaConfigure(PIO _selectedPIO, uint _sm)
+	void dmaConfigure()
 	{
-		selectedPIO = _selectedPIO;
-		stateIndex = _sm;
+       	selectedPIO = pio0;
+        int sm = pio_claim_unused_sm(selectedPIO, false);
+        if (sm < 0) {
+            selectedPIO = pio1;
+            sm = pio_claim_unused_sm(selectedPIO, true);
+        }
+        stateIndex = (uint)sm;		
 	};
 
 	void initDmaPio(uint dataLenDword32)
@@ -275,7 +280,7 @@ class DmaClient
 
 	void assignDmaIrq()
 	{
-		irq_set_exclusive_handler(DMA_IRQ_0, dmaFinishReceiver);
+		irq_add_shared_handler(DMA_IRQ_0, dmaFinishReceiver, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
 		dma_channel_set_irq0_enabled(PICO_DMA_CHANNEL, true);
 		irq_set_enabled(DMA_IRQ_0, true);
 	};
@@ -284,7 +289,7 @@ class DmaClient
 
 	bool isReadyBlocking()
 	{
-		int wait = 200;
+		int wait = 2000;
 		while(isDmaBusy && wait-- > 0)
 			busy_wait_us(50);
 
@@ -315,6 +320,9 @@ class Neopixel : public LedDriver, public DmaClient
 
 	uint64_t resetTime;
 
+	uint programAddress;
+	const pio_program_t* pioProgram;
+
 	friend class NeopixelParallel;
 
 	public:
@@ -322,15 +330,14 @@ class Neopixel : public LedDriver, public DmaClient
 			LedDriver(_ledsNumber, _pin, _dmaSize)
 	{
 		pio_sm_config smConfig;
-		uint programAddress;
 
-		dmaConfigure(pio0, 0);
+		dmaConfigure();
 		resetTime = _resetTime;
 
 		if (lanes >= 1)
 		{
-			programAddress = (timingType == NeopixelSubtype::ws2812b) ?
-				pio_add_program(selectedPIO,  &neopixel_ws2812b_parallel_program) : pio_add_program(selectedPIO,  &neopixel_parallel_program);
+			pioProgram = (timingType == NeopixelSubtype::ws2812b) ? &neopixel_ws2812b_parallel_program : &neopixel_parallel_program;
+			programAddress = pio_add_program(selectedPIO, pioProgram);
 
 			for(uint i=_pin; i<_pin + lanes; i++){
 				pio_gpio_init(selectedPIO, i);
@@ -340,12 +347,11 @@ class Neopixel : public LedDriver, public DmaClient
 				neopixel_ws2812b_parallel_program_get_default_config(programAddress) : neopixel_parallel_program_get_default_config(programAddress);
 
 			sm_config_set_out_pins(&smConfig, _pin, lanes);
-			sm_config_set_set_pins(&smConfig, _pin, lanes);
 		}
 		else
 		{
-			programAddress = (timingType == NeopixelSubtype::ws2812b) ?
-				pio_add_program(selectedPIO,  &neopixel_ws2812b_program) : pio_add_program(selectedPIO,  &neopixel_program);
+			pioProgram = (timingType == NeopixelSubtype::ws2812b) ? &neopixel_ws2812b_program : &neopixel_program;
+			programAddress = pio_add_program(selectedPIO, pioProgram);
 
 			pio_gpio_init(selectedPIO, _pin);
 
@@ -365,6 +371,15 @@ class Neopixel : public LedDriver, public DmaClient
 
 		initDmaPio(dmaSize / 4);
 	}
+
+	virtual ~Neopixel()
+    {
+		pio_sm_set_enabled(selectedPIO, stateIndex, false);
+		pio_sm_clear_fifos(selectedPIO, stateIndex);
+		pio_sm_unclaim(selectedPIO, stateIndex);
+
+        pio_remove_program(selectedPIO, pioProgram, programAddress);
+    }
 
 	uint8_t* getBufferMemory()
 	{
@@ -440,7 +455,7 @@ class NeopixelParallel
 		buffer = muxer->getBufferMemory();
 	}
 
-	~NeopixelParallel()
+	virtual ~NeopixelParallel()
 	{
 		if (instances > 0)
 			instances--;
@@ -514,7 +529,7 @@ class Dotstar : public LedDriver, public DmaClient
 	Dotstar(uint64_t _resetTime, int _ledsNumber, spi_inst_t* _spi, uint32_t _datapin, uint32_t _clockpin, int _dmaSize):
 			LedDriver(_ledsNumber, _datapin, _clockpin, _dmaSize)
 	{
-		dmaConfigure(pio0, 0);
+		dmaConfigure();
 		resetTime = _resetTime;
 
 		spi_init(_spi, 10000000);
@@ -583,7 +598,7 @@ class Ws2801 : public LedDriver, public DmaClient
 	Ws2801(uint64_t _resetTime, int _ledsNumber, spi_inst_t* _spi, uint32_t _datapin, uint32_t _clockpin, int _dmaSize):
 			LedDriver(_ledsNumber, _datapin, _clockpin, _dmaSize)
 	{
-		dmaConfigure(pio0, 0);
+		dmaConfigure();
 		resetTime = _resetTime;
 
 		spi_init(_spi, 1000000);

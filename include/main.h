@@ -73,7 +73,6 @@ void processData()
 		if (base.queueCurrent >= MAX_BUFFER)
 		{
 			base.queueCurrent = 0;
-			yield();
 		}
 
 		switch (frameState.getState())
@@ -151,17 +150,20 @@ void processData()
 			}
 			else if (frameState.getCount() ==  0x2aa2 && (input == 0x15 || input == 0x35))
 			{
-				statistics.print(currentTime, base.processDataHandle, base.processSerialHandle);
-
-				if (input == 0x15)
-					printf(HELLO_MESSAGE);
+				statistics.print(currentTime, input == 0x15);
 
 				frameState.setRegroup(true);
 
-				delay(10);
-
 				currentTime = millis();
-				statistics.reset(currentTime);
+				if (input == 0x15)
+				{					
+					statistics.reset(currentTime);
+				}
+				else
+				{
+					statistics.lightReset(currentTime, true);
+				}
+
 				frameState.setState(AwaProtocol::HEADER_A);
 			}
 			else
@@ -297,8 +299,6 @@ void processData()
 				currentTime = millis();
 				deltaTime = currentTime - statistics.getStartTime();
 				updateMainStatistics(currentTime, deltaTime, true);
-
-				yield();
 			}
 
 			frameState.setState(AwaProtocol::HEADER_A);

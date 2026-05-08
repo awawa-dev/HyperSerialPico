@@ -45,9 +45,6 @@ class Base
 		// handle to tasks
 		TaskHandle_t processDataHandle = nullptr;
 		TaskHandle_t processSerialHandle = nullptr;
-		// semaphore to synchronize them
-		semaphore_t serialSemaphore;
-		semaphore_t receiverSemaphore;
 		// current queue position
 		volatile int queueCurrent = 0;
 		// queue end position

@@ -28,6 +28,8 @@
 #ifndef STATISTICS_H
 #define STATISTICS_H
 
+#include <atomic>
+
 // statistics (stats sent only when there is no communication)
 class
 {
@@ -35,11 +37,17 @@ class
 	uint16_t goodFrames = 0;
 	uint16_t showFrames = 0;
 	uint16_t totalFrames = 0;
-	uint16_t finalGoodFrames = 0;
-	uint16_t finalShowFrames = 0;
-	uint16_t finalTotalFrames = 0;
+
+	volatile struct {
+		uint16_t finalGoodFrames = 0;
+		uint16_t finalShowFrames = 0;
+		uint16_t finalTotalFrames = 0;
+		bool welcomeMessage = false;
+	} outputStatistics;
 
 	public:
+		std::atomic<bool> printLogs = false;
+
 		/**
 		 * @brief Get the start time of the current period
 		 *
@@ -96,9 +104,9 @@ class
 		{
 			if (totalFrames > 0)
 			{
-				finalShowFrames = showFrames;
-				finalGoodFrames = std::min(goodFrames, totalFrames);
-				finalTotalFrames = totalFrames;
+				outputStatistics.finalShowFrames = showFrames;
+				outputStatistics.finalGoodFrames = std::min(goodFrames, totalFrames);
+				outputStatistics.finalTotalFrames = totalFrames;
 			}
 
 			startTime = currentTime;
@@ -113,25 +121,37 @@ class
 		 * @param curTime
 		 * @param taskHandle
 		 */
-		void print(unsigned long curTime, TaskHandle_t taskHandle1, TaskHandle_t taskHandle2)
+		void print(unsigned long curTime, bool isWelcome)
 		{
-			char output[128];
-
 			startTime = curTime;
 			goodFrames = 0;
 			totalFrames = 0;
 			showFrames = 0;
+			
+			outputStatistics.welcomeMessage = isWelcome;
+			
+			printLogs.store(true);
+		}
 
-			snprintf(output, sizeof(output), "HyperHDR frames: %u (FPS), receiv.: %u, good: %u, incompl.: %u, mem1: %i, mem2: %i, heap: %zu\r\n",
-						finalShowFrames, finalTotalFrames,finalGoodFrames,(finalTotalFrames - finalGoodFrames),
-						(taskHandle1 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandle1) : 0,
-						(taskHandle2 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandle2) : 0,
+		void printToSerial(TaskHandle_t taskHandleCore0)
+		{
+			char output[128];
+
+			snprintf(output, sizeof(output), "HyperHDR frames: %u (FPS), receiv.: %u, good: %u, incompl.: %u, core0: %i, heap: %zu\r\n",
+						outputStatistics.finalShowFrames, outputStatistics.finalTotalFrames, outputStatistics.finalGoodFrames,
+						(outputStatistics.finalTotalFrames - outputStatistics.finalGoodFrames),
+						(taskHandleCore0 != nullptr) ? uxTaskGetStackHighWaterMark(taskHandleCore0) : 0,
 						xPortGetFreeHeapSize());
-			printf(output);
+			tud_cdc_write_str(output);
 
 			#if defined(NEOPIXEL_RGBW)
-				calibrationConfig.printCalibration();
+				calibrationConfig.printCalibration(output);
 			#endif
+
+			if (outputStatistics.welcomeMessage)
+			{
+				tud_cdc_write_str(HELLO_MESSAGE);
+			}
 		}
 
 		/**
@@ -142,9 +162,9 @@ class
 		{
 			startTime = currentTime;
 
-			finalShowFrames = 0;
-			finalGoodFrames = 0;
-			finalTotalFrames = 0;
+			outputStatistics.finalShowFrames = 0;
+			outputStatistics.finalGoodFrames = 0;
+			outputStatistics.finalTotalFrames = 0;
 
 			goodFrames = 0;
 			totalFrames = 0;

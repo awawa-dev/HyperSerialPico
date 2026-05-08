@@ -125,11 +125,11 @@ class CalibrationConfig
 		 * @brief print RGBW calibration parameters when no data is received
 		 *
 		 */
-		void printCalibration()
+		template <size_t N>
+		void printCalibration(char (&output)[N])
 		{
-			char output[128];
-			snprintf(output, sizeof(output),"RGBW => Gain: %i/255, red: %i, green: %i, blue: %i\r\n", gain, red, green, blue);
-			printf(output);
+			snprintf(output, N, "RGBW => Gain: %i/255, red: %i, green: %i, blue: %i\r\n", gain, red, green, blue);
+			tud_cdc_write_str(output);
 		}
 } calibrationConfig;
 
