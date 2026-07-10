@@ -29,7 +29,7 @@ jobs:
         cmake ..
         cmake --build . --config Release
 
-    - uses: actions/upload-artifact@v7.0.0
+    - uses: actions/upload-artifact@v7.0.1
       name: Upload artifacts (release)
       with:
         name: firmware-release-generic-RP2040
@@ -46,7 +46,7 @@ jobs:
         cmake --build .
         zip -j ../firmware/firmware_generic_RP2350.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v7.0.0
+    - uses: actions/upload-artifact@v7.0.1
       name: Upload artifacts (release generic RP2350)
       with:
         name: firmware-release-generic-RP2350
@@ -66,7 +66,7 @@ jobs:
         cmake --build .
         zip -j ../firmware/Adafruit_Feather_RP2040_Scorpio.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v7.0.0
+    - uses: actions/upload-artifact@v7.0.1
       name: Upload artifacts (release for Adafruit_Feather_RP2040)
       with:
         name: firmware-release-adafruit-scorpio-RP2040
@@ -87,7 +87,7 @@ jobs:
         rm ../firmware/*_ws2801.uf2
         zip -j ../firmware/Adafruit_ItsyBitsy_RP2040.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v7.0.0
+    - uses: actions/upload-artifact@v7.0.1
       name: Upload artifacts (release for Adafruit_ItsyBitsy_RP2040)
       with:
         name: firmware-release-adafruit-itsybitsy-RP2040
@@ -108,7 +108,7 @@ jobs:
         rm ../firmware/*_ws2801.uf2
         zip -j ../firmware/Pimoroni_Plasma_Stick_RP2040_W.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v7.0.0
+    - uses: actions/upload-artifact@v7.0.1
       name: Upload artifacts (release for Pimoroni_Plasma_Stick_RP2040_W)
       with:
         name: firmware-release-pimoroni-plasma-stick-RP2040-W
@@ -128,7 +128,7 @@ jobs:
         cmake --build .
         zip -j ../firmware/Pimoroni_Plasma_RP2040.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v7.0.0
+    - uses: actions/upload-artifact@v7.0.1
       name: Upload artifacts (release for Pimoroni_Plasma_RP2040)
       with:
         name: firmware-release-pimoroni-plasma-RP2040
@@ -148,7 +148,7 @@ jobs:
         cmake --build .
         zip -j ../firmware/Pimoroni_Plasma_RP2350.zip ../firmware/*
 
-    - uses: actions/upload-artifact@v7.0.0
+    - uses: actions/upload-artifact@v7.0.1
       name: Upload artifacts (release for Pimoroni_Plasma_RP2350)
       with:
         name: firmware-release-pimoroni-plasma-RP2350
@@ -179,14 +179,14 @@ jobs:
         if: contains(env.VERSION, 'alpha') || contains(env.VERSION, 'beta')
         run: echo "preRelease=true" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v8.0.0
+      - uses: actions/download-artifact@v8.0.1
         with:
           pattern: firmware-release-*
           merge-multiple: true
 
       # create draft release and upload artifacts
       - name: Create draft release
-        uses: softprops/action-gh-release@v2.5.0
+        uses: softprops/action-gh-release@v3.0.0
         with:
           name: HyperSerialPico ${{ env.VERSION }}
           tag_name: ${{ env.TAG }}
