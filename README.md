@@ -1,13 +1,13 @@
 # HyperSerialPico
-Adalight serial port LED driver implementation for Raspberry Pi Pico RP2040.  
+Adalight serial port LED driver implementation for Raspberry Pi Pico RP2040/RP2350.  
 
-# Example of supported boards using Rp2040
+# Example of supported boards using rp2040/rp2350
 <p align="center"><img src="https://user-images.githubusercontent.com/69086569/236885968-baab51ba-a54b-4072-9a2a-cf867f2edb4b.png" width="250" height="250"/><img src="https://user-images.githubusercontent.com/69086569/236885360-dce9cfd7-92a8-43c6-911f-649325ee8a96.png" width="250" height="250"/></p>
 
 # Recommended boards with a built-in level shifter
-To ensure the LEDs will work properly with the Pico board, a 3.3V to 5V level shifter is needed. You can use an external one e.g. SN74AHCT125N or just buy a model of rp2040 that already has it built-in: Adafruit Feather RP2040 Scorpio (output: GPIO16-23), Adafruit ItsyBitsy RP2040 (output: GPIO14), Pimoroni Plasma 2040 (GPIO14-15) or Pimoroni Plasma Stick 2040 W (GPIO15).
+To ensure the LEDs will work properly with the Pico board, a 3.3V to 5V level shifter is needed. You can use an external one e.g. SN74AHCT125N or just buy a model of rp2040 that already has it built-in: Adafruit Feather RP2040 Scorpio (output: GPIO16-23), Adafruit ItsyBitsy RP2040 (output: GPIO14), Pimoroni Plasma 2040 (GPIO14-15), Pimoroni Plasma Stick 2040 W (GPIO15) or Pimoroni Plasma RP2350 (GPIO14-15).
 
-<p align="center"><img src="https://user-images.githubusercontent.com/69086569/242393809-4e491159-76c7-4c1e-be0a-1f10cd5291f2.png"  width="200" height="200"/><img src="https://github.com/awawa-dev/HyperSerialPico/assets/69086569/e7a2a945-be12-47b1-8e48-ffc1b11c5b2f.png"  width="200" height="200"/><img src="https://user-images.githubusercontent.com/69086569/241395006-ee27175e-677b-4971-97bc-ed294eaa8f3b.png" width="200" height="200"/><img src="https://user-images.githubusercontent.com/69086569/241394387-f8193ed8-56d5-46c6-b406-911720aed605.png" width="200" height="200"/></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/69086569/242393809-4e491159-76c7-4c1e-be0a-1f10cd5291f2.png"  width="200" height="200"/><img src="https://github.com/awawa-dev/HyperSerialPico/assets/69086569/e7a2a945-be12-47b1-8e48-ffc1b11c5b2f.png"  width="200" height="200"/><img src="https://user-images.githubusercontent.com/69086569/241395006-ee27175e-677b-4971-97bc-ed294eaa8f3b.png" width="200" height="200"/><img src="https://user-images.githubusercontent.com/69086569/241394387-f8193ed8-56d5-46c6-b406-911720aed605.png" width="200" height="200"/><img width="200" height="200" alt="plasma-2350" src="https://github.com/user-attachments/assets/888a4c3f-296c-4d7e-a46b-e9f1bcae9728" /></p>
 
 # Supported LED strips
 | LED strip / Device             |    Single lane   |    Multi-segment   |
