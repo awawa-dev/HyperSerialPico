@@ -147,6 +147,7 @@ void core0(void *pvParameters) {
                 do
                 {
                     wanted = std::min(MAX_BUFFER - base.queueEnd, MAX_BUFFER - 1);
+                    received = 0;
 
                     if (tud_cdc_connected() && tud_cdc_available()) {
                         received = (int)tud_cdc_read(const_cast<uint8_t*>(&(base.buffer[base.queueEnd])), (uint32_t)wanted);
